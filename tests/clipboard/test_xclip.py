@@ -20,6 +20,6 @@ def test_xclip_png(datadir):
     assert os.system(cmd.get_cmd(image_name)) == 0
 
     # check if clipboard was filled
+    # TODO: verify format in the string
     txt = pyclip.paste()
-
     assert txt != ""

@@ -6,6 +6,8 @@ class XclipCommand:
     Copies image to clipboard through `xclip`.
     '''
 
+    # TODO: figures other than png
+
     def __init__(self):
         self.cmd = 'xclip -selection clipboard -t image/{} -i {}'
 
