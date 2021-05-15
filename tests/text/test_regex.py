@@ -47,7 +47,7 @@ def test_python_import_libs():
 
 def test_extra_whitespace():
 
-    text = 'Too   much white    spaces.\n\tbut keep    breaklines and tabs'
+    text = 'Too much  white   spaces.\n\tbut keep    breaklines and tabs'
     expected_output = 'Too much white spaces.\n\tbut keep breaklines and tabs'
 
     regex = re.compile(SUBS['extra_whitespaces'])

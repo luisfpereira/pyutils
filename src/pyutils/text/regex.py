@@ -9,7 +9,7 @@ RE = {
 
 SUBS = {
     'punctuation': r'[,.\"!@#$%^&*(){}?/;`~:<>+=-]',
-    'extra_whitespaces': r'(?<=[ ]{1})[ ]{2,}',
+    'extra_whitespaces': r'(?<=[ ]{1})[ ]{1,}',
     'markdown_headers': r'^[#]{1,}|(?<=\n)[#]{1,}',
 }
 
