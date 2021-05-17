@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 from ..utils import get_import_location
 
