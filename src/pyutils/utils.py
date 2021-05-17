@@ -34,3 +34,22 @@ def get_module_name_from_import(import_str):
 
 def get_valid_path_from_import(import_str):
     return Path(*import_str.split('.'))
+
+
+def get_import_location(import_statement, parent_path='.', installed=False):
+
+    package = get_package_name_from_import(import_statement)
+    module = get_module_name_from_import(import_statement)
+
+    # get module and package paths
+    if installed:
+        parent_path = get_site_packages_path()
+    else:
+        parent_path = find_package_parent_path(parent_path, package)
+    if parent_path is None:
+        raise Exception(f'{package} was not found.')
+    else:
+        print(f'Found {package} in {parent_path}.')
+    module_path = get_valid_path_from_import(module)
+
+    return parent_path, package, module_path
