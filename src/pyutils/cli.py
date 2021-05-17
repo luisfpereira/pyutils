@@ -5,6 +5,7 @@ import click
 from pyutils.callgraph.pyan import create_callgraph
 from pyutils.subl import open_module
 from pyutils.subl import open_package
+from pyutils.subl import open_repo
 
 
 @click.command()
@@ -35,8 +36,8 @@ def make_callgraph(import_statement, fmt, path, installed, output_path,
 @click.option('--installed', '-i', is_flag=True)
 @click.option('--new-window', '-n', is_flag=True)
 def open_module_subl(import_statement, path, installed, new_window):
-    open_module(import_statement, path=path,
-                installed=installed, add=not new_window)
+    open_module(import_statement, path=path, installed=installed,
+                add=not new_window)
 
 
 @click.command()
@@ -46,5 +47,14 @@ def open_module_subl(import_statement, path, installed, new_window):
 @click.option('--installed', '-i', is_flag=True)
 @click.option('--new-window', '-n', is_flag=True)
 def open_package_subl(package_name, path, installed, new_window):
-    open_package(package_name, path=path,
-                 installed=installed, add=not new_window)
+    open_package(package_name, path=path, installed=installed,
+                 add=not new_window)
+
+
+@click.command()
+@click.argument('repo_name', nargs=1, type=str)
+@click.option('--path', '-p', nargs=1, type=str,
+              default=Path.home() / 'Repos')
+@click.option('--new-window', '-n', is_flag=True)
+def open_repo_subl(repo_name, path, new_window):
+    open_repo(repo_name, path=path, add=not new_window)

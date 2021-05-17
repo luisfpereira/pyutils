@@ -54,3 +54,20 @@ def get_import_location(import_statement, path='.', installed=False):
     module_path = get_valid_path_from_import(module)
 
     return parent_path, package, module_path
+
+
+def find_repo_parent_path(path, repo_name):
+
+    # get all packages and subpackages
+    filenames = [path_.parent for path_ in path.glob('**/.git')
+                 if path_.parent.name == repo_name]
+
+    # only one possibility
+    if len(filenames) == 1:
+        return filenames[0].parent
+    elif len(filenames) > 1:
+        raise Exception('More than one repo with the given name.')
+    else:
+        raise Exception('Repo was not found.')
+
+    return None
