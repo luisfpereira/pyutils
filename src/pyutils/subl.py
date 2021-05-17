@@ -3,12 +3,12 @@ import os
 from .utils import get_import_location
 
 
-def open_module(import_statement, parent_path='.', installed=False,
+def open_module(import_statement, path='.', installed=False,
                 subl_cmd='subl', add=True):
 
     # get module and package
     parent_path, package, module_path = get_import_location(
-        import_statement, parent_path, installed)
+        import_statement, path, installed)
 
     # open
     cmd = f'{subl_cmd} {parent_path / package / module_path}.py'
@@ -17,12 +17,12 @@ def open_module(import_statement, parent_path='.', installed=False,
     os.system(cmd)
 
 
-def open_package(package_name, parent_path='.', installed=False,
+def open_package(package_name, path='.', installed=False,
                  subl_cmd='subl', add=True):
 
     # get package path
     parent_path, package, _ = get_import_location(
-        package_name, parent_path, installed)
+        package_name, path, installed)
 
     # open
     cmd = f'{subl_cmd} {parent_path / package_name}'
