@@ -5,16 +5,9 @@ from ..utils import get_import_location
 
 
 def create_callgraph(import_statement, fmt='svg',
-                     parent_path=None, installed=False, output_path=None,
+                     parent_path='.', installed=False, output_path='.',
                      output_filename='myuses', open_cmd=None,
                      graph_controls=('uses', 'no-defines', 'colored', 'grouped')):
-
-    # initialization
-    if parent_path is None:
-        parent_path = Path.home() / 'Repos'
-
-    if output_path is None:
-        output_path = Path.home() / 'Pictures' / 'Graphs'
 
     output_filename = output_path / f'{output_filename}.{fmt}'
 
