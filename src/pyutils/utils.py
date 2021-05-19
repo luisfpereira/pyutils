@@ -5,7 +5,7 @@ import site
 def find_package_parent_path(path, package_name):
 
     # get all packages and subpackages
-    filenames = [path_.parent for path_ in path.glob('**/__init__.py')
+    filenames = [path_.parent for path_ in Path(path).glob('**/__init__.py')
                  if path_.parent.name == package_name]
 
     # only one possibility
