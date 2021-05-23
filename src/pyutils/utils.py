@@ -21,7 +21,7 @@ def find_package_parent_path(path, package_name):
 
 
 def get_site_packages_path():
-    return Path(site.getsitepackages[0])
+    return Path(site.getsitepackages()[0])
 
 
 def get_package_name_from_import(import_str):
