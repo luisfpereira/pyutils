@@ -24,7 +24,7 @@ def make_callgraph(import_statement, fmt, path, installed, output_path,
     # TODO: add graph controls to arg
     # TODO: add help
 
-    create_callgraph(import_statement, fmt=fmt, path=path,
+    create_callgraph(import_statement, fmt=fmt, parent_path=path,
                      installed=installed, output_path=output_path,
                      output_filename=output_filename)
 
