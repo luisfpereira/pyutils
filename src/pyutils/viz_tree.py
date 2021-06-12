@@ -35,6 +35,6 @@ def print_tree(root):
         print("%s%s" % (pre, node.name))
 
 
-def export_graph(root, filename, *args, **kwargs):
-    exporter = DotExporter(root)
+def export_graph(root, filename, **kwargs):
+    exporter = DotExporter(root, **kwargs)
     exporter.to_picture(filename)
