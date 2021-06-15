@@ -58,3 +58,18 @@ def open_package_subl(package_name, path, installed, new_window):
 @click.option('--new-window', '-n', is_flag=True)
 def open_repo_subl(repo_name, path, new_window):
     open_repo(repo_name, path=path, add=not new_window)
+
+
+@click.command()
+@click.argument('filename', nargs=1, type=str)
+def show_hdf_tree(filename):
+    import h5py
+    from pyutils.hdf import get_hdf_tree
+    from pyutils.viz_tree import print_tree
+
+    file = h5py.File(filename, 'r')
+
+    root = get_hdf_tree(file)
+    print_tree(root)
+
+    file.close()
