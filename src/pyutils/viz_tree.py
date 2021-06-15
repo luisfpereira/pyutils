@@ -1,10 +1,10 @@
-from anytree import Node
+from anytree import Node as AnytreeNode
 from anytree import RenderTree
 from anytree.exporter import DotExporter
 
 
 def get_tree(items, root_name='.', name_key='name', id_key='id',
-             parent_id_key='parent_id'):
+             parent_id_key='parent_id', Node=AnytreeNode):
     '''
     Args:
         items (list of dict)
