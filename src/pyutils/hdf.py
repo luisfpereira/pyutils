@@ -1,8 +1,31 @@
+from anytree import Node as AnytreeNode
 from anytree import PreOrderIter
+
+from h5py import Group
+from h5py import Dataset
 
 from pyutils.viz_tree import get_tree
 
-# visualization utils
+MAP_TYPE_STR = {Group: 'group',
+                Dataset: 'dataset'}
+
+
+class HdfNode(AnytreeNode):
+
+    def __init__(self, name, parent=None, children=None):
+        super().__init__(name, parent, children)
+        self.full_name = name
+
+    def _get_hdf_obj(self, file):
+        return file[self.full_name]
+
+    def get_hdf_type(self, file):
+        return MAP_TYPE_STR.get(type(self._get_hdf_obj(file)), None)
+
+    def get_dtype(self, file):
+        obj = self._get_hdf_obj(file)
+        if hasattr(obj, 'dtype'):
+            return obj.dtype
 
 
 def get_hdf_tree(file, root_name='.', simplify_names=True):
@@ -16,7 +39,7 @@ def get_hdf_tree(file, root_name='.', simplify_names=True):
              for id_, name in enumerate(items_ls)]
     _assign_parent(items[1:], 0, items[0], level=0, level_last={0: ''})
 
-    root = get_tree(items)
+    root = get_tree(items, Node=HdfNode)
 
     if simplify_names:
         _simplify_names(root)
