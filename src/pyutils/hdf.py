@@ -27,8 +27,14 @@ class HdfNode(AnytreeNode):
         if hasattr(obj, 'dtype'):
             return obj.dtype
 
+    def is_dataset(self, file):
+        return type(self._get_hdf_obj(file)) is Dataset
 
-def get_hdf_tree(file, root_name='.', simplify_names=True):
+    def is_group(self, file):
+        return type(self._get_hdf_obj(file)) is Group
+
+
+def get_hdf_tree(file, root_name='.', simplify_names=True, append_type=False):
 
     # get items
     items_ls = []
@@ -43,6 +49,9 @@ def get_hdf_tree(file, root_name='.', simplify_names=True):
 
     if simplify_names:
         _simplify_names(root)
+
+    if append_type:
+        _append_type(root, file)
 
     return root
 
@@ -70,3 +79,9 @@ def _assign_parent(items, i, parent, level, level_last):
 def _simplify_names(root):
     for node in PreOrderIter(root):
         node.name = node.name.split('/')[-1]
+
+
+def _append_type(root, file):
+    for node in PreOrderIter(root):
+        if node.is_dataset(file):
+            node.name = f'{node.name}: {node.get_dtype(file)}'

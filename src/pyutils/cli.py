@@ -62,14 +62,16 @@ def open_repo_subl(repo_name, path, new_window):
 
 @click.command()
 @click.argument('filename', nargs=1, type=str)
-def show_hdf_tree(filename):
+@click.option('--full-name', '-f', is_flag=True)
+@click.option('--add-types', '-t', is_flag=True)
+def show_hdf_tree(filename, full_name, add_types):
     import h5py
     from pyutils.hdf import get_hdf_tree
     from pyutils.viz_tree import print_tree
 
     file = h5py.File(filename, 'r')
 
-    root = get_hdf_tree(file)
+    root = get_hdf_tree(file, simplify_names=not full_name, append_type=add_types)
     print_tree(root)
 
     file.close()
