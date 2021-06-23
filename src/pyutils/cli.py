@@ -75,3 +75,16 @@ def show_hdf_tree(filename, full_name, add_types):
     print_tree(root)
 
     file.close()
+
+
+@click.command()
+def codecog_eq():
+    import pyperclip
+    from pyutils.codecogs import get_image_url
+
+    equation = rf'{pyperclip.paste()}'
+    print(f'Read equation: {equation}')
+
+    url = get_image_url(equation)
+    print(f'URL (copied to clipboard): {url}')
+    pyperclip.copy(url)
