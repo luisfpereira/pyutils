@@ -2,6 +2,7 @@ from pathlib import Path
 
 import click
 
+# TODO: move to the interior of the functions
 from pyutils.callgraph.pyan import create_callgraph
 from pyutils.subl import open_module
 from pyutils.subl import open_package
@@ -88,3 +89,24 @@ def codecog_eq():
     url = get_image_url(equation)
     print(f'URL (copied to clipboard): {url}')
     pyperclip.copy(url)
+
+
+@click.command()
+@click.argument('filename', nargs=1, type=str)
+@click.option('--fmt', '-f', nargs=1, type=str, default='svg')
+@click.option('--outputs-dir', '-o', nargs=1, type=str, default='outputs')
+def my_dot(filename, fmt, outputs_dir):
+    from pyutils.graphviz import export_graph
+    export_graph(filename, fmt=fmt, outputs_dir=outputs_dir)
+
+
+@click.command()
+@click.option('--inputs-dir', '-i', type=str, default='.')
+@click.option('--fmt', '-f', nargs=1, type=str, default='svg')
+@click.option('--outputs-dir', '-o', nargs=1, type=str, default='outputs')
+def my_dot_all(inputs_dir, fmt, outputs_dir):
+    import glob
+    from pyutils.graphviz import export_graph
+
+    for filename in glob.glob(f'{inputs_dir}/*.gv'):
+        export_graph(filename, fmt=fmt, outputs_dir=outputs_dir)
