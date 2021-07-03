@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from .utils import get_import_location
-from .utils import find_repo_parent_path
+from pyutils.path import get_import_location
+from pyutils.path import find_repo_parent_path
 
 
 def open_module(import_statement, path='.', installed=False,

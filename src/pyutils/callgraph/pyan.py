@@ -1,6 +1,6 @@
 import os
 
-from ..utils import get_import_location
+from pyutils.path import get_import_location
 
 
 def create_callgraph(import_statement, fmt='svg',
