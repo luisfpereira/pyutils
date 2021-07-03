@@ -1,2 +1,2 @@
-pyclip>=0.5, <1.0
+pyperclip
 tldextract

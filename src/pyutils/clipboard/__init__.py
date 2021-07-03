@@ -1,2 +1,2 @@
-
-from .xclip import XclipCommand
+from .xclip import *
+from .pyperclip import *
