@@ -27,3 +27,13 @@ def _unravel_array(array, collector):
             _unravel_array(item, collector)
     else:
         collector.append(array)
+
+
+def count_repetitions(ls, thresh=1):
+    reps = {}
+    for item in set(ls):
+        c = ls.count(item)
+        if c >= thresh:
+            reps[item] = c
+
+    return reps
