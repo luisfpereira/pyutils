@@ -1,11 +1,11 @@
 import re
+import urllib.parse as urlparse
 
 import tldextract
 
 from pyutils.text import regex_lib
 
-# TODO: get url without params
-# TODO: get params from url
+# TODO: get repeated urls (clean first)
 
 
 DOMAIN_CORRECTIONS = {
@@ -38,3 +38,21 @@ def get_unique_domains(urls):
 
 def get_links_from_domains(domains, urls):
     return [url for url in urls if get_domain(url) in domains]
+
+
+def split_url(url):
+    """Slipts a url in endpoint and query parameters.
+    """
+    parsed_url = urlparse.urlparse(url)
+
+    endpoint = parsed_url.netloc + parsed_url.path
+    query_params = urlparse.parse_qs(parsed_url.query)
+
+    return endpoint, query_params
+
+
+def clean_url(url):
+    """Removes query part (returns netloc + path).
+    """
+    parsed_url = urlparse.urlparse(url)
+    return parsed_url.netloc + parsed_url.path
