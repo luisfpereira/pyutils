@@ -39,7 +39,7 @@ def get_links_from_domains(domains, urls):
 
 
 def split_url(url):
-    """Slipts a url in endpoint and query parameters.
+    """Splits an url in endpoint and query parameters.
     """
     parsed_url = urlparse.urlparse(url)
 
@@ -54,3 +54,12 @@ def clean_url(url):
     """
     parsed_url = urlparse.urlparse(url)
     return parsed_url.netloc + parsed_url.path
+
+
+def get_urls_nested(items, clean=False, access_fnc=lambda x: x):
+    """Gets urls from nested objects and performs cleaning (if asked).
+    """
+    if clean:
+        return [[clean_url(url_) for url_ in get_urls(access_fnc(item))] for item in items]
+    else:
+        return [get_urls(access_fnc(item)) for item in items]
