@@ -1,6 +1,6 @@
 import re
 
-from . import regex_lib
+from pyutils.regex_lib import regex_lib
 
 
 def increase_markdown_header(text):

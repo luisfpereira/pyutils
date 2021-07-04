@@ -3,9 +3,7 @@ import urllib.parse as urlparse
 
 import tldextract
 
-from pyutils.text import regex_lib
-
-# TODO: get repeated urls (clean first)
+from pyutils import regex_lib
 
 
 DOMAIN_CORRECTIONS = {
