@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from pyutils.text import regex_lib
+from pyutils import regex_lib
 
 
 def test_url():
