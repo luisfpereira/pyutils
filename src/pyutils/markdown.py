@@ -15,7 +15,12 @@ def decrease_header(text):
     return regex.sub(lambda m: m.group()[:-1], text)
 
 
-def get_headers(text, level):
+def get_headers(text, level=None):
     regex = re.compile(regex_lib.markdown_headers(level=level))
 
     return regex.findall(text)
+
+
+def get_leveled_headers():
+    # TODO
+    pass
