@@ -11,10 +11,17 @@ DOMAIN_CORRECTIONS = {
 }
 
 
-def get_urls(text):
+def get_urls(text, pp_fnc=None):
+    """
+    Args:
+        pp_fnc (callable): post-processes url.
+    """
+    if pp_fnc is None:
+        pp_fnc = _get_identity()
+
     regex = re.compile(regex_lib.url())
 
-    return regex.findall(text)
+    return [pp_fnc(url) for url in regex.findall(text)]
 
 
 def get_domain(url):
@@ -56,10 +63,14 @@ def clean_url(url):
     return parsed_url.netloc + parsed_url.path
 
 
-def get_urls_nested(items, clean=False, access_fnc=lambda x: x):
-    """Gets urls from nested objects and performs cleaning (if asked).
+def get_urls_nested(items, pp_fnc=None, access_fnc=None):
+    """Gets urls from nested object.
     """
-    if clean:
-        return [[clean_url(url_) for url_ in get_urls(access_fnc(item))] for item in items]
-    else:
-        return [get_urls(access_fnc(item)) for item in items]
+    if access_fnc is None:
+        access_fnc = _get_identity()
+
+    return [get_urls(access_fnc(item), pp_fnc=pp_fnc) for item in items]
+
+
+def _get_identity():
+    return lambda x: x
