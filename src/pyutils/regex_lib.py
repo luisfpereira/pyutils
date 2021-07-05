@@ -58,3 +58,7 @@ def inline_eq():
     """Finds inline equations.
     """
     return r'\$[^\$]+\$'
+
+
+def inline_code():
+    return r'`[^`]+`'
