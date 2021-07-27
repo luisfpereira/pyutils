@@ -2,22 +2,46 @@ from pathlib import Path
 import site
 
 
-def find_package_parent_path(path, package_name):
+def find_package_parent_path(path, package_name, exclude_patterns=('build/lib',)):
 
     # get all packages and subpackages
-    filenames = [path_.parent for path_ in Path(path).glob('**/__init__.py')
+    dir_paths = [path_.parent for path_ in Path(path).glob('**/__init__.py')
                  if path_.parent.name == package_name]
 
+    # exclude patterns
+    dir_paths = [dir_path for dir_path in dir_paths
+                 if not exclude_path_patterns(dir_path, exclude_patterns)]
+
     # only one possibility
-    if len(filenames) == 1:
-        return filenames[0].parent
+    if len(dir_paths) == 1:
+        return dir_paths[0].parent
 
     # in case a subpackage is found
-    for filename in filenames:
-        if len([path_ for path_ in filename.parent.glob('__init__.py')]) == 0:
-            return filename.parent
+    for dir_path in dir_paths:
+
+        if len([path_ for path_ in dir_path.parent.glob('__init__.py')]) == 0:
+            return dir_path.parent
 
     return None
+
+
+def exclude_path_patterns(path, exclude_patterns):
+    """
+    Args:
+        exclude_patterns (array-like): patterns to be ignored.
+            Relative to found folders, i.e. if folder to ignore is
+            'build/lib/package_name', then pass 'build/lib'.
+    """
+    for exclude_pattern in exclude_patterns:
+        path_ = path.parent
+        for name in reversed(exclude_pattern.split('/')):
+            if name != path_.name:
+                break
+            path_ = path_.parent
+        else:
+            return True
+
+    return False
 
 
 def get_site_packages_path():
