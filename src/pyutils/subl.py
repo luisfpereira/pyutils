@@ -10,7 +10,7 @@ def open_module(import_statement, path='.', installed=False,
 
     # get module and package
     parent_path, package, module_path = get_import_location(
-        import_statement, path, installed)
+        import_statement, path, installed, verbose=True)
 
     # open
     cmd = f'{subl_cmd} {parent_path / package / module_path}.py'
@@ -24,7 +24,7 @@ def open_package(package_name, path='.', installed=False,
 
     # get package path
     parent_path, package, _ = get_import_location(
-        package_name, path, installed)
+        package_name, path, installed, verbose=True)
 
     # open
     cmd = f'{subl_cmd} {parent_path / package_name}'
