@@ -2,6 +2,20 @@ from pathlib import Path
 import site
 
 
+def convert_dirname_to_path(dir_name):
+    """
+    Notes:
+        Handles definition of home with `~`.
+    """
+    dir_name_ls = dir_name.split('/')
+    if dir_name_ls[0] == '~':
+        path = Path.home() / '/'.join(dir_name_ls[1:])
+    else:
+        path = Path(dir_name)
+
+    return path
+
+
 def find_package_parent_path(path, package_name, exclude_patterns=('build/lib',)):
 
     # get all packages and subpackages
@@ -97,3 +111,15 @@ def find_repo_parent_path(path, repo_name):
         raise Exception('Repo was not found.')
 
     return None
+
+
+def find_repo_path(path, repo_name):
+    return find_repo_parent_path(path, repo_name) / repo_name
+
+
+def find_all_repos_paths(path, sort=True):
+    paths = [path.parent for path in path.glob('**/.git')]
+    if sort:
+        paths = sorted(paths, key=lambda x: x.name)
+
+    return paths
