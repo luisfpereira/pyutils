@@ -1,8 +1,9 @@
-from pathlib import Path
 import json
 
 from web_apis.binance.sessions import SignedBinanceSession
 from web_apis.binance.queries import AccountSnapshotQuery
+
+from pyutils import get_home_path
 
 
 # TODO: very similar to joplin. make abstract?
@@ -30,7 +31,7 @@ def get_account_balance_details(session):
 
 
 def get_auth_filepath():
-    return Path.home() / '.pyutils' / 'binance_secrets.json'
+    return get_home_path() / 'binance_secrets.json'
 
 
 def get_secrets():
