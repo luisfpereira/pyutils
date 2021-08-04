@@ -8,6 +8,23 @@ from pyutils.subl import open_module
 from pyutils.subl import open_package
 from pyutils.subl import open_repo
 
+CHECKOUT_MSGS = {
+    0: 'Successfully checked out.',
+    1: 'Failed: dirty repo.',
+    2: 'Failed: inexistent branch.',
+}
+
+
+PULL_MSGS = {
+    0: 'Successfully pulled changes.',
+    1: 'No changes.',
+    2: 'Failed: no upstream.',
+    3: 'Failed: merge_conflicts.',
+    4: 'Failed: local non-commited changes.'
+}
+
+UNKNOWN_ERROR_MSG = 'Failed: unknown error.'
+
 
 @click.command()
 @click.argument('import_statement', nargs=1, type=str)
@@ -128,13 +145,14 @@ def print_repos_active_branch(dirname, ignore):
 @click.option('--dirname', '-d', type=str, default='~/Repos/')
 @click.option('--origin', '-o', is_flag=True)
 def print_repo_branches(repo_name, dirname, origin):
-    from pyutils.path import convert_dirname_to_path
-    from pyutils.git import get_repo
+    """Prints repo branches (active in first place).
+    """
     from pyutils.git import get_repo_branch_names
 
-    path = convert_dirname_to_path(dirname)
-    repo = get_repo(repo_name, path=path)
-    branch_names = get_repo_branch_names(repo, include_origin=origin)
+    repo = _get_git_repo(dirname, repo_name)
+
+    branch_names = get_repo_branch_names(repo, include_origin=origin,
+                                         active_first=True)
 
     for branch_name in branch_names:
         print(f'{branch_name}')
@@ -156,14 +174,163 @@ def print_repos_branches(dirname, ignore, origin):
             print(f'  {branch_name}')
 
 
-def _read_git_repos_file():
+@click.command()
+@click.option('--dirname', '-d', type=str, default='~/Repos')
+@click.option('--ignore', '-i', is_flag=True)
+@click.option('--untracked', '-u', is_flag=True)
+def print_repos_dirty(dirname, ignore, untracked):
+    repos_dict = _get_git_repos(dirname, ignore)
+
+    dirty_repos_names = [repo_name for repo_name, repo in repos_dict.items()
+                         if repo.is_dirty(untracked_files=untracked)]
+    print('\n'.join(dirty_repos_names))
+
+
+@click.command()
+@click.argument('repo_name', nargs=1, type=str)
+@click.argument('branch_name', nargs=1, type=str)
+@click.option('--dirname', '-d', type=str, default='~/Repos')
+@click.option('--force', '-f', is_flag=True)
+def checkout_repo(repo_name, branch_name, dirname, force):
+    from pyutils.git import checkout
+
+    repo = _get_git_repo(dirname, repo_name)
+    var_checkout = checkout(repo, branch_name, force=force)
+    msg = CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)
+    print(msg)
+
+
+@click.command()
+@click.option('--dirname', '-d', type=str, default='~/Repos')
+def checkout_repos(dirname):
+    from pyutils.git import checkout
+
+    repos_info = _get_repos_checkout_info_from_file(dirname)
+    for repo_name, info in repos_info.items():
+        print(f'{repo_name}')
+        print(info)
+
+        var_checkout = checkout(info['repo'], info['branch_name'],
+                                force=info['force_checkout'])
+        msg = CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)
+        print(f'  {msg}')
+
+
+@click.command()
+@click.argument('repo_name', nargs=1, type=str)
+@click.option('--dirname', '-d', type=str, default='~/Repos')
+def pull_repo(repo_name, dirname):
+    from pyutils.git import pull
+
+    repo = _get_git_repo(dirname, repo_name)
+    var_pull = pull(repo)
+
+    msg = PULL_MSGS.get(var_pull, UNKNOWN_ERROR_MSG)
+    print(msg)
+
+
+@click.command()
+@click.option('--dirname', '-d', type=str, default='~/Repos')
+@click.option('--ignore', '-i', is_flag=True)
+def pull_repos(dirname, ignore):
+    from pyutils.git import pull
+
+    repos_dict = _get_git_repos(dirname, ignore)
+
+    # pull repos
+    msgs = {key: [] for key in PULL_MSGS.keys()}
+    unknown = []
+    for repo_name, repo in repos_dict.items():
+        var_pull = pull(repo)
+        msgs.get(var_pull, unknown).append(repo_name)
+
+    # print messages expected behavior
+    for msg_val, repos_names in msgs.items():
+        if len(repos_names) > 0:
+            print(PULL_MSGS[msg_val])
+            print('  ' + '\n  '.join(repos_names))
+
+    # print unknown errors
+    if len(unknown) > 0:
+        print(UNKNOWN_ERROR_MSG)
+        print('  ' + '\n  '.join(unknown))
+
+
+@click.command()
+@click.option('--dirname', '-d', type=str, default='~/Repos')
+@click.option('--ignore', '-i', is_flag=True)
+def print_repos_no_upstream(dirname, ignore):
+    """Prints active branches with no upstreams.
+
+    Notes:
+        Active branches with no upstreams cannot be pulled.
+    """
+    from pyutils.git import has_upstream
+
+    repos_dict = _get_git_repos(dirname, ignore)
+    no_upstream_names = {repo_name for repo_name, repo in repos_dict.items()
+                         if not has_upstream(repo)}
+
+    print('\n'.join(no_upstream_names))
+
+
+def _read_git_repos_file(parse=True):
     from pyutils import get_home_path
 
     file_path = get_home_path() / 'git_repos.txt'
     with open(file_path, 'r') as file:
         repos_txt = file.read()
 
-    return [repo_name.strip() for repo_name in repos_txt.split()]
+    if parse:
+        return _parse_git_repos_file(repos_txt)
+    else:
+        return repos_txt
+
+
+def _parse_git_repos_file(repos_txt):
+    lines = [repo_name.strip() for repo_name in repos_txt.split('\n') if repo_name[0] != '#']
+
+    info = {}
+    for line in lines:
+        line_split = [name.strip() for name in line.split(',')]
+        repo_name = line_split[0]
+        branch_name = line_split[1] if len(line_split) > 1 else None
+        force_checkout = _transform_bool(line_split[2]) if len(line_split) > 2 else False
+
+        info[repo_name] = {
+            'branch_name': branch_name,
+            'force_checkout': force_checkout
+        }
+
+    return info
+
+
+def _get_repos_names_from_file():
+    info = _read_git_repos_file(parse=True)
+
+    return list(info.keys())
+
+
+def _get_repos_checkout_info_from_file(dirname):
+    repos_info = _read_git_repos_file(parse=True)
+
+    new_repos_info = {}
+    for repo_name, info in repos_info.items():
+        if info['branch_name'] is not None:
+            new_repos_info[repo_name] = info
+            new_repos_info[repo_name]['repo'] = _get_git_repo(dirname, repo_name)
+
+    return new_repos_info
+
+
+def _get_git_repo(dirname, repo_name):
+    from pyutils.path import convert_dirname_to_path
+    from pyutils.git import get_repo
+
+    path = convert_dirname_to_path(dirname)
+    repo = get_repo(repo_name, path=path)
+
+    return repo
 
 
 def _get_git_repos(dirname, ignore):
@@ -172,6 +339,7 @@ def _get_git_repos(dirname, ignore):
     Notes:
         Use flag `ignore` to ignore file and show all the repos in a path.
 
+        If `ignore` is False, then dirname tells were to look for the repo.
     """
     from pyutils.path import convert_dirname_to_path
     from pyutils.git import get_repos_from_path
@@ -182,10 +350,15 @@ def _get_git_repos(dirname, ignore):
     if ignore:
         repos_dict = get_repos_from_path(path)
     else:
-        repos_names = _read_git_repos_file()
+        # TODO: add not found
+        repos_names = _get_repos_names_from_file()
         repos_dict = {name: get_repo(name, path=path) for name in repos_names}
 
     return repos_dict
 
 
-# TODO: print dirty repos (deal with untracked)
+def _transform_bool(string):
+    if string.lower() == 'false':
+        return False
+    elif string.lower() == 'true':
+        return True
