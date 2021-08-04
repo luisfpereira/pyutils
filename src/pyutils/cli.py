@@ -130,10 +130,10 @@ def my_dot_all(inputs_dir, fmt, outputs_dir):
 
 
 @click.command()
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-@click.option('--ignore', '-i', is_flag=True)
-def print_repos_active_branch(dirname, ignore):
-    repos_dict = _get_git_repos(dirname, ignore)
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+@click.option('--dirname', '-d', type=str, default=None)
+def print_repos_active_branch(search_dirname, dirname):
+    repos_dict = _get_git_repos(search_dirname, dirname)
 
     for repo_name, repo in repos_dict.items():
         active_branch = repo.active_branch
@@ -142,14 +142,14 @@ def print_repos_active_branch(dirname, ignore):
 
 @click.command()
 @click.argument('repo_name', nargs=1, type=str)
-@click.option('--dirname', '-d', type=str, default='~/Repos/')
+@click.option('--search-dirname', '-s', type=str, default='~/Repos/')
 @click.option('--origin', '-o', is_flag=True)
-def print_repo_branches(repo_name, dirname, origin):
+def print_repo_branches(repo_name, search_dirname, origin):
     """Prints repo branches (active in first place).
     """
     from pyutils.git import get_repo_branch_names
 
-    repo = _get_git_repo(dirname, repo_name)
+    repo = _get_git_repo(search_dirname, repo_name)
 
     branch_names = get_repo_branch_names(repo, include_origin=origin,
                                          active_first=True)
@@ -159,13 +159,13 @@ def print_repo_branches(repo_name, dirname, origin):
 
 
 @click.command()
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-@click.option('--ignore', '-i', is_flag=True)
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+@click.option('--dirname', '-d', type=str, default=None)
 @click.option('--origin', '-o', is_flag=True)
-def print_repos_branches(dirname, ignore, origin):
+def print_repos_branches(search_dirname, dirname, origin):
     from pyutils.git import get_repo_branch_names
 
-    repos_dict = _get_git_repos(dirname, ignore)
+    repos_dict = _get_git_repos(search_dirname, dirname)
 
     for repo_name, repo in repos_dict.items():
         print(f'{repo_name}')
@@ -175,11 +175,11 @@ def print_repos_branches(dirname, ignore, origin):
 
 
 @click.command()
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-@click.option('--ignore', '-i', is_flag=True)
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+@click.option('--dirname', '-d', type=str, default=None)
 @click.option('--untracked', '-u', is_flag=True)
-def print_repos_dirty(dirname, ignore, untracked):
-    repos_dict = _get_git_repos(dirname, ignore)
+def print_repos_dirty(search_dirname, dirname, untracked):
+    repos_dict = _get_git_repos(search_dirname, dirname)
 
     dirty_repos_names = [repo_name for repo_name, repo in repos_dict.items()
                          if repo.is_dirty(untracked_files=untracked)]
@@ -189,23 +189,23 @@ def print_repos_dirty(dirname, ignore, untracked):
 @click.command()
 @click.argument('repo_name', nargs=1, type=str)
 @click.argument('branch_name', nargs=1, type=str)
-@click.option('--dirname', '-d', type=str, default='~/Repos')
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
 @click.option('--force', '-f', is_flag=True)
-def checkout_repo(repo_name, branch_name, dirname, force):
+def checkout_repo(repo_name, branch_name, search_dirname, force):
     from pyutils.git import checkout
 
-    repo = _get_git_repo(dirname, repo_name)
+    repo = _get_git_repo(search_dirname, repo_name)
     var_checkout = checkout(repo, branch_name, force=force)
     msg = CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)
     print(msg)
 
 
 @click.command()
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-def checkout_repos(dirname):
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+def checkout_repos(search_dirname):
     from pyutils.git import checkout
 
-    repos_info = _get_repos_checkout_info_from_file(dirname)
+    repos_info = _get_repos_checkout_info_from_file(search_dirname)
     for repo_name, info in repos_info.items():
         print(f'{repo_name}')
         print(info)
@@ -218,11 +218,11 @@ def checkout_repos(dirname):
 
 @click.command()
 @click.argument('repo_name', nargs=1, type=str)
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-def pull_repo(repo_name, dirname):
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+def pull_repo(repo_name, search_dirname):
     from pyutils.git import pull
 
-    repo = _get_git_repo(dirname, repo_name)
+    repo = _get_git_repo(search_dirname, repo_name)
     var_pull = pull(repo)
 
     msg = PULL_MSGS.get(var_pull, UNKNOWN_ERROR_MSG)
@@ -230,12 +230,12 @@ def pull_repo(repo_name, dirname):
 
 
 @click.command()
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-@click.option('--ignore', '-i', is_flag=True)
-def pull_repos(dirname, ignore):
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+@click.option('--dirname', '-d', type=str, default=None)
+def pull_repos(search_dirname, dirname):
     from pyutils.git import pull
 
-    repos_dict = _get_git_repos(dirname, ignore)
+    repos_dict = _get_git_repos(search_dirname, dirname)
 
     # pull repos
     msgs = {key: [] for key in PULL_MSGS.keys()}
@@ -257,9 +257,9 @@ def pull_repos(dirname, ignore):
 
 
 @click.command()
-@click.option('--dirname', '-d', type=str, default='~/Repos')
-@click.option('--ignore', '-i', is_flag=True)
-def print_repos_no_upstream(dirname, ignore):
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+@click.option('--dirname', '-d', type=str, default=None)
+def print_repos_no_upstream(search_dirname, dirname):
     """Prints active branches with no upstreams.
 
     Notes:
@@ -267,12 +267,14 @@ def print_repos_no_upstream(dirname, ignore):
     """
     from pyutils.git import has_upstream
 
-    repos_dict = _get_git_repos(dirname, ignore)
+    repos_dict = _get_git_repos(search_dirname, dirname)
     no_upstream_names = {repo_name for repo_name, repo in repos_dict.items()
                          if not has_upstream(repo)}
 
     print('\n'.join(no_upstream_names))
 
+
+# TODO: print packages that need push/pull
 
 def _read_git_repos_file(parse=True):
     from pyutils import get_home_path
@@ -333,23 +335,24 @@ def _get_git_repo(dirname, repo_name):
     return repo
 
 
-def _get_git_repos(dirname, ignore):
+def _get_git_repos(search_dirname, dirname):
     """Get repos from directory (all or from file).
 
     Notes:
-        Use flag `ignore` to ignore file and show all the repos in a path.
+        If `dirname` is not None, then `search_dirname` is ignored.
 
-        If `ignore` is False, then dirname tells were to look for the repo.
+        If `dirname` is None, then the file at home is used.
     """
     from pyutils.path import convert_dirname_to_path
     from pyutils.git import get_repos_from_path
     from pyutils.git import get_repo
 
-    path = convert_dirname_to_path(dirname)
-
-    if ignore:
+    if dirname is not None:
+        path = convert_dirname_to_path(dirname)
         repos_dict = get_repos_from_path(path)
     else:
+        path = convert_dirname_to_path(search_dirname)
+
         # TODO: add not found
         repos_names = _get_repos_names_from_file()
         repos_dict = {name: get_repo(name, path=path) for name in repos_names}
