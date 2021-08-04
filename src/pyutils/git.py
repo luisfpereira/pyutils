@@ -10,7 +10,6 @@ from pyutils.path import find_all_repos_paths
 # TODO: fetch all branches
 # TODO: checkout to specific branches (need to deal with error if local changes -> success vs failed)
 # TODO: launch tests in all related packages
-# TODO: repo origin branches
 
 
 def get_repo(repo_name, path=Path.home() / 'Repos'):
@@ -47,20 +46,18 @@ def get_repo_branch_names(repo):
     return [head.name for head in repo.heads]
 
 
-def get_repo_active_branch(repo):
-    return repo.active_branch
-
-
 def checkout(repo, branch_name, force=False):
     """Checkouts to existing branch.
 
     Returns:
-        int : Based on its value, one of the following situations happen:
+        int : Based on its value, one of the following situations happened:
 
-            - 0: success
-            - 1: branch name does does exist
-            - 2: changes in current tree does not allow checkout
+            - 0: Success.
+            - 1: Branch name does does exist.
+            - 2: Changes in current tree does not allow checkout.
     """
+    # TODO: verify if it is dirty
+    # TODO: verify for 2 and also pass GitCommandError
 
     # find head
     head = None
@@ -76,3 +73,65 @@ def checkout(repo, branch_name, force=False):
         return 0
     except GitCommandError:
         return 2
+
+
+def pull(repo):
+    """Pulls current active branch.
+
+    Returns:
+        int or GitCommandError: Based on its value, one of the following
+        situations happened:
+
+            - 0: Success: changes.
+            - 1: Success: no changes.
+            - 2: Failed: no upstream.
+            - 3: Failed: merge conflicts (merge is aborted).
+            - 4: Failed: conflict with local non-commited changes.
+            - GitCommandError: Failed: unknown error origin.
+    """
+    up_to_date_var = is_up_to_date(repo)  # anaconda does not allow walrus
+    if up_to_date_var:
+        return up_to_date_var  # existence of upstream is also verified
+
+    try:
+        repo.remotes.origin.pull()
+        return 0
+
+    except GitCommandError as e:
+        msg_local_conflict = "stderr: 'error: Your local changes to the following files would be overwritten by merge:'"
+
+        stderr = e.stderr
+        if stderr == '':
+            repo.git.execute(['git', 'merge', '--abort'])
+            return 3
+        elif stderr.strip() == msg_local_conflict:
+            return 4
+        else:
+            return e
+
+
+def is_up_to_date(repo):
+    """Checks if current active branch is up-to-date.
+
+    Returns:
+        int : Based on its value, one of the following situations happened:
+
+            - 0: Is outdated: last commit in the origin is
+            - 1: Is up-to-date.
+            - 2: No upstream.
+    """
+    if not has_upstream(repo):
+        return 2
+
+    repo.git.fetch()
+
+    local = repo.head.commit
+    remote = repo.active_branch.tracking_branch().commit
+    if local == remote:
+        return 1
+    else:
+        return 0
+
+
+def has_upstream(repo):
+    return repo.active_branch.tracking_branch() is not None
