@@ -116,26 +116,25 @@ def my_dot_all(inputs_dir, fmt, outputs_dir):
 @click.option('--dirname', '-d', type=str, default='~/Repos')
 @click.option('--ignore', '-i', is_flag=True)
 def print_repos_active_branch(dirname, ignore):
-    from pyutils.git import get_repo_active_branch
-
     repos_dict = _get_git_repos(dirname, ignore)
 
     for repo_name, repo in repos_dict.items():
-        active_branch = get_repo_active_branch(repo)
+        active_branch = repo.active_branch
         print(f'{repo_name}: {active_branch.name}')
 
 
 @click.command()
 @click.argument('repo_name', nargs=1, type=str)
 @click.option('--dirname', '-d', type=str, default='~/Repos/')
-def print_repo_branches(repo_name, dirname):
+@click.option('--origin', '-o', is_flag=True)
+def print_repo_branches(repo_name, dirname, origin):
     from pyutils.path import convert_dirname_to_path
     from pyutils.git import get_repo
     from pyutils.git import get_repo_branch_names
 
     path = convert_dirname_to_path(dirname)
     repo = get_repo(repo_name, path=path)
-    branch_names = get_repo_branch_names(repo)
+    branch_names = get_repo_branch_names(repo, include_origin=origin)
 
     for branch_name in branch_names:
         print(f'{branch_name}')
@@ -144,22 +143,23 @@ def print_repo_branches(repo_name, dirname):
 @click.command()
 @click.option('--dirname', '-d', type=str, default='~/Repos')
 @click.option('--ignore', '-i', is_flag=True)
-def print_repos_branches(dirname, ignore):
+@click.option('--origin', '-o', is_flag=True)
+def print_repos_branches(dirname, ignore, origin):
     from pyutils.git import get_repo_branch_names
 
     repos_dict = _get_git_repos(dirname, ignore)
 
     for repo_name, repo in repos_dict.items():
         print(f'{repo_name}')
-        branch_names = get_repo_branch_names(repo)
+        branch_names = get_repo_branch_names(repo, include_origin=origin)
         for branch_name in branch_names:
             print(f'  {branch_name}')
 
 
 def _read_git_repos_file():
-    from pyutils import get_home
+    from pyutils import get_home_path
 
-    file_path = get_home() / 'git_repos.txt'
+    file_path = get_home_path() / 'git_repos.txt'
     with open(file_path, 'r') as file:
         repos_txt = file.read()
 
@@ -186,3 +186,6 @@ def _get_git_repos(dirname, ignore):
         repos_dict = {name: get_repo(name, path=path) for name in repos_names}
 
     return repos_dict
+
+
+# TODO: print dirty repos (deal with untracked)
