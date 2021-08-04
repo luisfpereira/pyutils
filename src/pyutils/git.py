@@ -6,6 +6,8 @@ from git.exc import GitCommandError
 from pyutils.path import find_repo_path
 from pyutils.path import find_all_repos_paths
 
+# TODO: remove local changes?
+
 
 def get_repo(repo_name, path=Path.home() / 'Repos'):
     repo_path = find_repo_path(path, repo_name)
@@ -36,12 +38,16 @@ def get_repo_name(repo):
     return repo.git_dir.split('/')[-2]
 
 
-def get_repo_branch_names(repo, include_origin=False):
+def get_repo_branch_names(repo, include_origin=False, active_first=True):
     branch_names = [head.name for head in repo.heads]
     if include_origin:
         branch_names.extend([ref.name for ref in repo.remotes.origin.refs])
 
-    # TODO: add include origin
+    if active_first:
+        active_branch_name = repo.active_branch.name
+        branch_names.remove(active_branch_name)
+        branch_names.insert(0, active_branch_name)
+
     return branch_names
 
 
@@ -142,4 +148,6 @@ def is_up_to_date(repo):
 
 
 def has_upstream(repo):
+    """Checks if activate branch has upstream.
+    """
     return repo.active_branch.tracking_branch() is not None
