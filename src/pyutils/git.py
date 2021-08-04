@@ -6,11 +6,6 @@ from git.exc import GitCommandError
 from pyutils.path import find_repo_path
 from pyutils.path import find_all_repos_paths
 
-# TODO: check current branches (of a path - cerfacs or git as default - or of a list of repos in a txt)
-# TODO: fetch all branches
-# TODO: checkout to specific branches (need to deal with error if local changes -> success vs failed)
-# TODO: launch tests in all related packages
-
 
 def get_repo(repo_name, path=Path.home() / 'Repos'):
     repo_path = find_repo_path(path, repo_name)
@@ -41,38 +36,51 @@ def get_repo_name(repo):
     return repo.git_dir.split('/')[-2]
 
 
-def get_repo_branch_names(repo):
+def get_repo_branch_names(repo, include_origin=False):
+    branch_names = [head.name for head in repo.heads]
+    if include_origin:
+        branch_names.extend([ref.name for ref in repo.remotes.origin.refs])
+
     # TODO: add include origin
-    return [head.name for head in repo.heads]
+    return branch_names
+
+
+def get_head(repo, branch_name):
+    head = None
+    for head in repo.heads:
+        if head.name == branch_name:
+            return head
+
+    return None
 
 
 def checkout(repo, branch_name, force=False):
-    """Checkouts to existing branch.
+    """Checks out to existing branch.
 
     Returns:
         int : Based on its value, one of the following situations happened:
 
             - 0: Success.
-            - 1: Branch name does does exist.
-            - 2: Changes in current tree does not allow checkout.
+            - 1: Failed: dirty repo.
+            - 2: Failed: branch name does does exist.
+            - GitCommandError: Failed: unknown error origin.
     """
-    # TODO: verify if it is dirty
-    # TODO: verify for 2 and also pass GitCommandError
+
+    # verify if it is dirty
+    if repo.is_dirty(untracked_files=False) and not force:
+        return 1
 
     # find head
-    head = None
-    for head in repo.heads:
-        if head.name == branch_name:
-            break
-    else:
-        return 1
+    head = get_head(repo, branch_name)
+    if head is None:
+        return 2
 
     # checkout
     try:
         head.checkout(force=force)
         return 0
-    except GitCommandError:
-        return 2
+    except GitCommandError as e:
+        return e
 
 
 def pull(repo):
