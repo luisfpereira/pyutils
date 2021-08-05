@@ -1,6 +1,5 @@
 from pathlib import Path
 import json
-import os
 
 import click
 
@@ -289,6 +288,7 @@ def make_integrated_tests(project_name, search_dirname):
     from pyutils import get_home_path
     from pyutils.git import checkout
     from pyutils.pytest import have_tests_failed
+    from pyutils.pytest import run_tests
 
     # get repos info
     file_path = get_home_path() / 'integrated_tests.json'
@@ -317,7 +317,11 @@ def make_integrated_tests(project_name, search_dirname):
         if repo_name in ignore_repos_names:
             continue
         repo = repo_info[-1]
-        _make_test(repo.working_dir)
+        var_run = run_tests(repo.working_dir)
+        if not var_run:
+            info_test[2].append(repo_name)
+            continue
+
         var_test = have_tests_failed(repo.working_dir)
         info_test[var_test].append(repo_name)
 
@@ -424,10 +428,3 @@ def _transform_bool(string):
         return False
     elif string.lower() == 'true':
         return True
-
-
-def _make_test(working_dir):
-    cwd = os.getcwd()
-    os.chdir(working_dir)
-    os.system('make test')
-    os.chdir(cwd)
