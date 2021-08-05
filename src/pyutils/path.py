@@ -120,6 +120,6 @@ def find_repo_path(path, repo_name):
 def find_all_repos_paths(path, sort=True):
     paths = [path.parent for path in path.glob('**/.git')]
     if sort:
-        paths = sorted(paths, key=lambda x: x.name)
+        paths = sorted(paths, key=lambda x: x.name.lower())
 
     return paths
