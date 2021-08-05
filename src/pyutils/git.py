@@ -72,6 +72,10 @@ def checkout(repo, branch_name, force=False):
             - GitCommandError: Failed: unknown error origin.
     """
 
+    # verify if already in the right branch
+    if repo.active_branch.name == branch_name:
+        return 0
+
     # verify if it is dirty
     if repo.is_dirty(untracked_files=False) and not force:
         return 1
