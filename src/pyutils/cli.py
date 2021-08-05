@@ -282,8 +282,13 @@ def print_repos_no_upstream(search_dirname, dirname):
 @click.argument('project_name', nargs=1, type=str)
 @click.option('--search-dirname', '-s', type=str, default='~/Repos')
 def make_integrated_tests(project_name, search_dirname):
+    """
+    Notes:
+        Assumes Makefile with `make test` exist.
+    """
     from pyutils import get_home_path
     from pyutils.git import checkout
+    from pyutils.pytest import have_tests_failed
 
     # get repos info
     file_path = get_home_path() / 'integrated_tests.json'
@@ -297,21 +302,37 @@ def make_integrated_tests(project_name, search_dirname):
         repo_info.append(repo)
 
     # checkout
-    ignore_repos = []
+    ignore_repos = {}
     for repo_name, repo_info in repos_info.items():
         branch_name, force, repo = repo_info
         var_checkout = checkout(repo, branch_name, force=force)
 
         if var_checkout != 0:
-            print(f'{repo_name}: {CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)}')
-            ignore_repos.append(repo_name)
+            ignore_repos[repo_name] = var_checkout
 
     # make test
+    ignore_repos_names = list(ignore_repos.keys())
+    info_test = {0: [], 1: [], 2: []}
     for repo_name, repo_info in repos_info.items():
-        if repo_name in ignore_repos:
+        if repo_name in ignore_repos_names:
             continue
         repo = repo_info[-1]
         _make_test(repo.working_dir)
+        var_test = have_tests_failed(repo.working_dir)
+        info_test[var_test].append(repo_name)
+
+    # print quick summary
+    print('\nQuick summary:\n=============')
+
+    if len(ignore_repos) > 0:
+        print('\nRepos that failed checkout:')
+        for repo_name, error_info in ignore_repos.items():
+            print(f'  {repo_name}: {CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)}')
+
+    for val_test, msg in enumerate(['succeeded', 'failed', "didn't run"]):
+        if len(info_test[val_test]) > 0:
+            print(f'\nRepos that {msg} tests:')
+            print('  ' + '\n  '.join(info_test[val_test]))
 
 
 def _read_git_repos_file(parse=True):
@@ -406,8 +427,6 @@ def _transform_bool(string):
 
 
 def _make_test(working_dir):
-    # TODO: can be made more robust
-    # TODO: check if failed
     cwd = os.getcwd()
     os.chdir(working_dir)
     os.system('make test')
