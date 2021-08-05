@@ -1,5 +1,7 @@
 from pathlib import Path
 import json
+import subprocess
+import shutil
 
 
 def have_tests_failed(dir_name):
@@ -13,10 +15,9 @@ def have_tests_failed(dir_name):
     """
     # TODO: robustness still to be confirmed
 
-    pycache_paths = list(Path(dir_name).glob('**/.pytest_cache'))
-    if len(pycache_paths) == 0:
+    pycache_path = _get_pycache_path(dir_name)
+    if pycache_path is None:
         return 2
-    pycache_path = pycache_paths[0]
 
     # py cache does not exist
     if not pycache_path.exists():
@@ -38,8 +39,57 @@ def have_tests_failed(dir_name):
     return int(len(fail_info) > 0)
 
 
+def run_tests(dir_name, rm_cache=True):
+    """
+    Args:
+        rm_cache (bool) : Removes pytest_cache previous to tests.
+    """
+    if rm_cache:
+        _rm_pycache(dir_name)
+
+    # try make test
+    success = _make_test(dir_name)
+
+    if not success:
+        success = _run_pytest(dir_name)
+
+    return success
+
+
 def _read_info_from_json(filename):
     with open(filename, 'r') as file:
         info = json.load(file)
 
     return info
+
+
+def _get_pycache_path(dir_name):
+    pycache_paths = list(Path(dir_name).glob('**/.pytest_cache'))
+    if len(pycache_paths) == 0:
+        return None
+    else:
+        return pycache_paths[0]
+
+
+def _rm_pycache(dir_name):
+    pycache_path = _get_pycache_path(dir_name)
+    if pycache_path is not None:
+        shutil.rmtree(pycache_path)
+
+
+def _make_test(dir_name):
+    return _run_cmd(['make', 'test'], dir_name) != ''
+
+
+def _run_pytest(dir_name):
+    # TODO: make more robust with pytest not found?
+    stdout = _run_cmd(['pytest'], dir_name)
+    return 'no tests ran' not in stdout
+
+
+def _run_cmd(cmd_ls, dir_name):
+
+    result = subprocess.run(cmd_ls, stdout=subprocess.PIPE,
+                            universal_newlines=True, cwd=dir_name)
+
+    return result.stdout
