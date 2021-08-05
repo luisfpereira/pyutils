@@ -1,4 +1,6 @@
 from pathlib import Path
+import json
+import os
 
 import click
 
@@ -7,6 +9,8 @@ from pyutils.callgraph.pyan import create_callgraph
 from pyutils.subl import open_module
 from pyutils.subl import open_package
 from pyutils.subl import open_repo
+
+# TODO: print packages that need push/pull
 
 CHECKOUT_MSGS = {
     0: 'Successfully checked out.',
@@ -274,7 +278,41 @@ def print_repos_no_upstream(search_dirname, dirname):
     print('\n'.join(no_upstream_names))
 
 
-# TODO: print packages that need push/pull
+@click.command()
+@click.argument('project_name', nargs=1, type=str)
+@click.option('--search-dirname', '-s', type=str, default='~/Repos')
+def make_integrated_tests(project_name, search_dirname):
+    from pyutils import get_home_path
+    from pyutils.git import checkout
+
+    # get repos info
+    file_path = get_home_path() / 'integrated_tests.json'
+    with open(file_path, 'r') as file:
+        dict_tests = json.load(file)
+    repos_info = dict_tests[project_name]
+
+    # get repos
+    for repo_name, repo_info in repos_info.items():
+        repo = _get_git_repo(search_dirname, repo_name)
+        repo_info.append(repo)
+
+    # checkout
+    ignore_repos = []
+    for repo_name, repo_info in repos_info.items():
+        branch_name, force, repo = repo_info
+        var_checkout = checkout(repo, branch_name, force=force)
+
+        if var_checkout != 0:
+            print(f'{repo_name}: {CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)}')
+            ignore_repos.append(repo_name)
+
+    # make test
+    for repo_name, repo_info in repos_info.items():
+        if repo_name in ignore_repos:
+            continue
+        repo = repo_info[-1]
+        _make_test(repo.working_dir)
+
 
 def _read_git_repos_file(parse=True):
     from pyutils import get_home_path
@@ -365,3 +403,12 @@ def _transform_bool(string):
         return False
     elif string.lower() == 'true':
         return True
+
+
+def _make_test(working_dir):
+    # TODO: can be made more robust
+    # TODO: check if failed
+    cwd = os.getcwd()
+    os.chdir(working_dir)
+    os.system('make test')
+    os.chdir(cwd)
