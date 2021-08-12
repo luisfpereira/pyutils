@@ -1,25 +1,10 @@
 import numpy as np
-import codemetrics as cm
 import altair as alt
 
 IGNORE_PATHS = ('.', 'docs', 'doc', 'tests', 'test', 'notebooks')
 IGNORE_LANGS = ('reStructuredText', 'Markdown', 'make')
 IGNORE_EXTS = ('geo', 'xmf', 'xdmf', 'h5', 'hdf5', 'xml', 'json',
                'yml', 'yaml', 'csv', 'svg', 'png')
-
-# TODO: include only also?
-
-
-def get_loc(repo, ignore_paths=IGNORE_PATHS, ignore_langs=IGNORE_LANGS,
-            ignore_exts=IGNORE_EXTS, **kwargs):
-    df = cm.get_cloc(repo, **kwargs)
-
-    # exclude paths and/or languages
-    df = exclude_paths(df, ignore_paths=ignore_paths)
-    df = exclude_languages(df, ignore_langs=ignore_langs)
-    df = exclude_file_types(df, ignore_exts=ignore_exts)
-
-    return df
 
 
 def create_loc_chart(loc_df):
@@ -62,6 +47,14 @@ def exclude_file_types(df, ignore_exts=IGNORE_EXTS, col_name='path'):
     exc_indices = _exclude_str(df[col_name], ignore_exts, 'endswith')
 
     return df[~exc_indices]
+
+
+def include_only_paths(df, include_paths, col_name='path'):
+    for path in include_paths:
+        inc_indices = _exclude_str(df[col_name], include_paths,
+                                   method='startswith')
+
+    return df[inc_indices]
 
 
 def _exclude_str(df_col, ignores, method, negate=False):
