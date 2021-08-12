@@ -32,8 +32,8 @@ def exclude_paths(df, ignore_paths=IGNORE_PATHS, col_name='path'):
 
 
 def exclude_root_files(df, col_name='path'):
-    exc_indices = _exclude_str(df[col_name], ['/'], 'contains', negate=True)
-    return df[~exc_indices]
+    inc_indices = _exclude_str(df[col_name], ['/'], 'contains')
+    return df[inc_indices]
 
 
 def exclude_languages(df, ignore_langs=IGNORE_LANGS):
@@ -57,12 +57,11 @@ def include_only_paths(df, include_paths, col_name='path'):
     return df[inc_indices]
 
 
-def _exclude_str(df_col, ignores, method, negate=False):
+def _exclude_str(df_col, ignores, method):
     exc_indices = np.array([False] * df_col.size)
 
     for ignore in ignores:
         fnc = getattr(df_col.str, method)
-        new_exc_indices = ~(fnc(ignore)) if negate else fnc(ignore)
-        exc_indices = np.logical_or(exc_indices, new_exc_indices)
+        exc_indices = np.logical_or(exc_indices, fnc(ignore))
 
     return exc_indices
