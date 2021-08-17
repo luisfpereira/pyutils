@@ -210,10 +210,10 @@ def checkout_repos(search_dirname):
 
     repos_info = _get_repos_checkout_info_from_file(search_dirname)
     for repo_name, info in repos_info.items():
-        print(f'{repo_name}')
-        print(info)
+        branch_name = info['branch_name']
+        print(f'{repo_name} -> {branch_name}')
 
-        var_checkout = checkout(info['repo'], info['branch_name'],
+        var_checkout = checkout(info['repo'], branch_name,
                                 force=info['force_checkout'])
         msg = CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)
         print(f'  {msg}')
