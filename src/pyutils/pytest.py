@@ -87,9 +87,13 @@ def _run_pytest(dir_name):
     return 'no tests ran' not in stdout
 
 
-def _run_cmd(cmd_ls, dir_name):
+def _run_cmd(cmd_ls, dir_name, verbose=True):
+    # TODO: adapt verbose levels
 
     result = subprocess.run(cmd_ls, stdout=subprocess.PIPE,
                             universal_newlines=True, cwd=dir_name)
+
+    if verbose:
+        print(result.stdout)
 
     return result.stdout
