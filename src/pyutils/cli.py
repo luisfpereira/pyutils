@@ -303,15 +303,18 @@ def make_integrated_tests(project_name, search_dirname):
 
     # checkout
     ignore_repos = {}
+    only_checkout_repos = []
     for repo_name, repo_info in repos_info.items():
-        branch_name, force, repo = repo_info
-        var_checkout = checkout(repo, branch_name, force=force)
+        branch_name, to_test, repo = repo_info
+        var_checkout = checkout(repo, branch_name, force=False)
 
         if var_checkout != 0:
             ignore_repos[repo_name] = var_checkout
+        elif not to_test:
+            only_checkout_repos.append(repo_name)
 
     # make test
-    ignore_repos_names = list(ignore_repos.keys())
+    ignore_repos_names = list(ignore_repos.keys()) + only_checkout_repos
     info_test = {0: [], 1: [], 2: []}
     for repo_name, repo_info in repos_info.items():
         if repo_name in ignore_repos_names:
@@ -326,12 +329,16 @@ def make_integrated_tests(project_name, search_dirname):
         info_test[var_test].append(repo_name)
 
     # print quick summary
-    print('\nQuick summary:\n=============')
+    print('\n\nQuick summary\n=============')
+
+    if len(only_checkout_repos) > 0:
+        print('\nSuccessfully checked out (only):')
+        print('  ' + '\n  '.join(only_checkout_repos))
 
     if len(ignore_repos) > 0:
         print('\nRepos that failed checkout:')
         for repo_name, error_info in ignore_repos.items():
-            print(f'  {repo_name}: {CHECKOUT_MSGS.get(var_checkout, UNKNOWN_ERROR_MSG)}')
+            print(f'  {repo_name}: {CHECKOUT_MSGS.get(error_info, UNKNOWN_ERROR_MSG)}')
 
     for val_test, msg in enumerate(['succeeded', 'failed', "didn't run"]):
         if len(info_test[val_test]) > 0:
