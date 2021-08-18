@@ -278,12 +278,12 @@ def print_repos_no_upstream(search_dirname, dirname):
 
 
 @click.command()
-@click.argument('project_name', nargs=1, type=str)
+@click.option('--project-name', '-p', type=str, default=None)
 @click.option('--search-dirname', '-s', type=str, default='~/Repos')
 def make_integrated_tests(project_name, search_dirname):
     """
     Notes:
-        Assumes Makefile with `make test` exist.
+        Assumes Makefile with `make test` exist or `pytest` can be used.
     """
     from pyutils import get_home_path
     from pyutils.git import checkout
@@ -294,6 +294,8 @@ def make_integrated_tests(project_name, search_dirname):
     file_path = get_home_path() / 'integrated_tests.json'
     with open(file_path, 'r') as file:
         dict_tests = json.load(file)
+    if project_name is None:
+        project_name = list(dict_tests.keys())[0]
     repos_info = dict_tests[project_name]
 
     # get repos
