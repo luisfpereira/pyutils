@@ -55,7 +55,6 @@ make-integrated-tests <project-name>
 It looks for a `json` configuration file in `~/.pyutils` named `integrated_tests.json`. The configuration file contains, for each project, a set of repos, for which a list containing the branch name and a boolean (which specificies if the library is to be tested or the repo should only be checked out) should be defined. e.g.
 
 ```json
-# ~/.pyutils.integrated_tests.json (do not add this to your file as json does not allow comments)
 {
     "kokiy":
     {
@@ -89,7 +88,6 @@ Most of the CLI tools are straightforward and self-explanatory. By default, it s
 `checkout-repos` and `pull-repos`, by default, look for repos in a `txt` configuration file in `~/pyutils` named `git_repos.txt`. e.g.
 
 ```
-# ~/.pyutils.git_repos.txt
 # repo, branch (if applicable), force checkout (if applicable) 
 kokiy, master, False
 pyavbp
