@@ -36,7 +36,7 @@ def test_python_imports():
                        ('matplotlib', 'pyplot', 'plt')]
 
     text = ''.join(scenarios)
-    regex = re.compile(regex_lib.python_imports())
+    regex = re.compile(regex_lib.python_import())
 
     output = regex.findall(text)
 

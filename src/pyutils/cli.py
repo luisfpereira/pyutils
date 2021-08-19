@@ -3,12 +3,6 @@ import json
 
 import click
 
-# TODO: move to the interior of the functions
-from pyutils.callgraph.pyan import create_callgraph
-from pyutils.subl import open_module
-from pyutils.subl import open_package
-from pyutils.subl import open_repo
-
 # TODO: print packages that need push/pull
 
 CHECKOUT_MSGS = {
@@ -40,6 +34,7 @@ UNKNOWN_ERROR_MSG = 'Failed: unknown error.'
 @click.option('--output-filename', '-o', type=str, default='myuses')
 def make_callgraph(import_statement, fmt, path, installed, output_path,
                    output_filename):
+    from pyutils.callgraph.pyan import create_callgraph
     # TODO: add yml config file
     # TODO: add open_cmd
     # TODO: add graph controls to arg
@@ -57,6 +52,7 @@ def make_callgraph(import_statement, fmt, path, installed, output_path,
 @click.option('--installed', '-i', is_flag=True)
 @click.option('--new-window', '-n', is_flag=True)
 def open_module_subl(import_statement, path, installed, new_window):
+    from pyutils.subl import open_module
     open_module(import_statement, path=path, installed=installed,
                 add=not new_window)
 
@@ -68,6 +64,7 @@ def open_module_subl(import_statement, path, installed, new_window):
 @click.option('--installed', '-i', is_flag=True)
 @click.option('--new-window', '-n', is_flag=True)
 def open_package_subl(package_name, path, installed, new_window):
+    from pyutils.subl import open_package
     open_package(package_name, path=path, installed=installed,
                  add=not new_window)
 
@@ -78,6 +75,7 @@ def open_package_subl(package_name, path, installed, new_window):
               default=Path.home() / 'Repos')
 @click.option('--new-window', '-n', is_flag=True)
 def open_repo_subl(repo_name, path, new_window):
+    from pyutils.subl import open_repo
     open_repo(repo_name, path=path, add=not new_window)
 
 

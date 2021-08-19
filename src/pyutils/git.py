@@ -6,8 +6,6 @@ from git.exc import GitCommandError
 from pyutils.path import find_repo_path
 from pyutils.path import find_all_repos_paths
 
-# TODO: remove local changes?
-
 
 def get_repo(repo_name, path=Path.home() / 'Repos'):
     repo_path = find_repo_path(path, repo_name)

@@ -16,7 +16,7 @@ def decrease_header(text):
 
 
 def get_headers(text, level=None):
-    regex = re.compile(regex_lib.markdown_headers(level=level))
+    regex = re.compile(regex_lib.markdown_header(level=level))
 
     return regex.findall(text)
 
