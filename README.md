@@ -29,7 +29,7 @@ pip install git+https://github.com/lpereira95/pyutils.git@master#egg=pyutils[int
 
 Note: in `zsh` shell you have to escape `[` and `]`.
 
-Check out `setup.cfg` to get a list of available extra requirements option.
+Check out `setup.cfg` to get a list of available extra requirements options.
 
 
 ## CLI tools
@@ -73,7 +73,7 @@ Ir assumes each repo can be tested by `make test` or `pytest`.
 
 
 
-## Repos management
+### Repos management
 
 **Includes**: `print-repos-active-branch`, `print-repo-branches`, `print-repos-branches`, `print-repos-dirty`, `checkout-repo`, `checkout-repos`, `pull-repo`, `pull-repos`
 
