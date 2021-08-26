@@ -4,6 +4,9 @@ import re
 
 import numpy as np
 import altair as alt
+import codemetrics as cm
+from codemetrics.vega import vis_ages
+
 
 IGNORE_PATHS = ('.', 'docs', 'doc', 'tests', 'test', 'notebooks')
 IGNORE_LANGS = ('reStructuredText', 'Markdown', 'make')
@@ -23,6 +26,36 @@ def create_loc_chart(loc_df):
     ).properties(title='Lines of code')
 
     return chart
+
+
+def create_age_chart(ages_df, weeks=52):
+
+    width = 1000
+    weeks = list(range(weeks))
+    chart = alt.Chart(ages_df).encode(color='language')
+    top = chart.mark_bar().\
+        encode(x=alt.X('age_agg:O', sort='ascending', title='age in weeks',
+                       scale=alt.Scale(domain=weeks)),
+               y=alt.Y('count(path):Q', title='Number of files'),
+               color=alt.Color('language', scale=alt.Scale(scheme='tableau10')),
+               tooltip=['count(path)', 'language']
+               ).\
+        transform_calculate(age_agg='floor(datum.age / 7)').\
+        properties(width=width)
+    bottom = chart.mark_tick(size=60, thickness=2, opacity=.3).\
+        encode(x=alt.X('age:Q', title='age in days'),
+               tooltip='path').properties(width=width)
+    chart = alt.vconcat(top, bottom)
+
+    return chart
+
+
+def create_age_loc_chart(ages_df, height=500, width=500, **kwargs):
+    """
+    Notes:
+        Use `VegaLite` to visualize output.
+    """
+    return vis_ages(ages_df, height=height, width=width, **kwargs)
 
 
 def exclude_paths(df, ignore_paths=IGNORE_PATHS, col_name='path'):
@@ -76,7 +109,7 @@ def create_html_report(project_name, charts_json,
     """
     Args:
         charts_json (dict): JSON data.
-            Must contain: 'loc', 'contr', 'loc_age', 'hotspots'.
+            Must contain: 'loc', 'age', 'loc_age', 'hotspots'.
     """
 
     # read template
@@ -105,7 +138,7 @@ def create_html_report_from_files(project_name, charts_dir,
 
     # read json
     charts_json = {}
-    for plot_name in ['loc', 'contr', 'loc_age', 'hotspots']:
+    for plot_name in ['loc', 'age', 'loc_age', 'hotspots']:
         chart_filename = os.path.join(charts_dir, plot_name)
 
         with open(f'{chart_filename}.json', 'r') as file:
