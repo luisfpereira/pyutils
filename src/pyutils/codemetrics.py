@@ -71,8 +71,13 @@ def _exclude_str(df_col, ignores, method):
     return exc_indices
 
 
-def create_html_report(project_name, charts_dir,
+def create_html_report(project_name, charts_json,
                        filename='codemetrics_report.html'):
+    """
+    Args:
+        charts_json (dict): JSON data.
+            Must contain: 'loc', 'contr', 'loc_age', 'hotspots'.
+    """
 
     # read template
     template_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -82,13 +87,8 @@ def create_html_report(project_name, charts_dir,
 
     # add json data
     html = template
-    for data_filename in ['loc.json', 'contr.json', 'loc_age.json', 'hotspots.json']:
-        chart_filename = os.path.join(charts_dir, data_filename)
-
-        with open(chart_filename, 'r') as file:
-            chart_data = json.load(file)
-
-        search_str = r'\{\{' + '.'.join(data_filename.split('.')[:-1]) + r'\}\}'
+    for plot_name, chart_data in charts_json.items():
+        search_str = r'\{\{' + plot_name + r'\}\}'
         html = re.sub(search_str, json.dumps(chart_data),
                       html)
 
@@ -98,3 +98,21 @@ def create_html_report(project_name, charts_dir,
     # create html file
     with open(filename, 'w') as file:
         file.write(html)
+
+
+def create_html_report_from_files(project_name, charts_dir,
+                                  filename='codemetrics_report.html'):
+
+    # read json
+    charts_json = {}
+    for plot_name in ['loc', 'contr', 'loc_age', 'hotspots']:
+        chart_filename = os.path.join(charts_dir, plot_name)
+
+        with open(f'{chart_filename}.json', 'r') as file:
+            charts_json[plot_name] = json.load(file)
+
+    return create_html_report(project_name, charts_json, filename=filename)
+
+
+def altair2json(chart):
+    return json.loads(chart.to_json())
