@@ -1,3 +1,7 @@
+import os
+import json
+import re
+
 import numpy as np
 import altair as alt
 
@@ -65,3 +69,32 @@ def _exclude_str(df_col, ignores, method):
         exc_indices = np.logical_or(exc_indices, fnc(ignore))
 
     return exc_indices
+
+
+def create_html_report(project_name, charts_dir,
+                       filename='codemetrics_report.html'):
+
+    # read template
+    template_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'codemetrics_template.html')
+    with open(template_filename, 'r') as file:
+        template = file.read()
+
+    # add json data
+    html = template
+    for data_filename in ['loc.json', 'contr.json', 'loc_age.json', 'hotspots.json']:
+        chart_filename = os.path.join(charts_dir, data_filename)
+
+        with open(chart_filename, 'r') as file:
+            chart_data = json.load(file)
+
+        search_str = r'\{\{' + '.'.join(data_filename.split('.')[:-1]) + r'\}\}'
+        html = re.sub(search_str, json.dumps(chart_data),
+                      html)
+
+    # add project name
+    html = re.sub(r'\{\{project_name\}\}', project_name, html)
+
+    # create html file
+    with open(filename, 'w') as file:
+        file.write(html)
