@@ -4,8 +4,8 @@ import re
 
 import numpy as np
 import altair as alt
-import codemetrics as cm
 from codemetrics.vega import vis_ages
+from codemetrics.vega import vis_hot_spots
 
 
 IGNORE_PATHS = ('.', 'docs', 'doc', 'tests', 'test', 'notebooks')
@@ -56,6 +56,16 @@ def create_age_loc_chart(ages_df, height=500, width=500, **kwargs):
         Use `VegaLite` to visualize output.
     """
     return vis_ages(ages_df, height=height, width=width, **kwargs)
+
+
+def create_hotspots_chart(hspots, width=500, height=500,
+                          size_column='complexity', **kwargs):
+    """
+    Notes:
+        Use `VegaLite` to visualize output.
+    """
+    return vis_hot_spots(hspots, width=width, height=height,
+                         size_column=size_column, **kwargs)
 
 
 def exclude_paths(df, ignore_paths=IGNORE_PATHS, col_name='path'):
