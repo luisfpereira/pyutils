@@ -1,14 +1,12 @@
-import json
-
 from web_apis.binance.sessions import SignedBinanceSession
 from web_apis.binance.queries import AccountSnapshotQuery
 
-from pyutils import get_home_path
+from pyutils.auth import get_secrets
 
 
 # TODO: very similar to joplin. make abstract?
 def create_signed_session():
-    secrets = get_secrets()
+    secrets = get_secrets('binance_secrets.json')
     return SignedBinanceSession(**secrets)
 
 
@@ -28,15 +26,3 @@ def get_account_balance_details(session):
 # TODO: get total deposit
 # TODO: plot losses/gains (deposit - current eur balance)
 # TODO: create bar plot with current losses for each coin
-
-
-def get_auth_filepath():
-    return get_home_path() / 'binance_secrets.json'
-
-
-def get_secrets():
-    filepath = get_auth_filepath()
-    with open(filepath, 'r') as file:
-        data = json.load(file)
-
-    return data
