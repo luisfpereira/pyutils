@@ -1,3 +1,7 @@
+import os
+import re
+import shutil
+
 from anytree import Node as AnytreeNode
 from anytree import PreOrderIter
 
@@ -8,6 +12,34 @@ from pyutils.viz_tree import get_tree
 
 MAP_TYPE_STR = {Group: 'group',
                 Dataset: 'dataset'}
+
+
+def rename_hdf(filename, new_basename):
+    """Renames hdf by changing paths in xdmf file.
+
+    Notes:
+        `xdfm` and `h5` files assumed to be in the same folder.
+    """
+    ext = filename.split('.')[-1]  # xmf or xdmf
+    dirname = os.path.dirname(filename)
+    if ext not in ['xmf', 'xdmf']:
+        raise Exception('Unexpected extension type')
+
+    basename = os.path.basename(filename).split('.')[0]
+
+    # replace in xdmf
+    with open(filename, 'r') as file:
+        data = file.read()
+    h5_ext = re.search(fr'{basename}.(\w+):', data).group(1)
+
+    new_data = re.sub(basename, new_basename, data)
+    with open(filename, 'w') as file:
+        file.write(new_data)
+
+    # rename files
+    shutil.move(filename, os.path.join(dirname, f'{new_basename}.{ext}'))
+    shutil.move(os.path.join(dirname, f'{basename}.{h5_ext}'),
+                os.path.join(dirname, f'{new_basename}.{h5_ext}'))
 
 
 class HdfNode(AnytreeNode):

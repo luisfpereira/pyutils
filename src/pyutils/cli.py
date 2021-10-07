@@ -347,6 +347,15 @@ def make_integrated_tests(project_name, search_dirname):
             print('  ' + '\n  '.join(info_test[val_test]))
 
 
+@click.command()
+@click.argument('filename', nargs=1, type=str)
+@click.argument('new_basename', nargs=1, type=str)
+def rename_hdf_cli(filename, new_basename):
+    from pyutils.hdf import rename_hdf
+
+    rename_hdf(filename, new_basename)
+
+
 def _read_git_repos_file(parse=True):
     from pyutils import get_home_path
 
