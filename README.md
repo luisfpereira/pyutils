@@ -1,5 +1,5 @@
 
-`pyutils` contains small CLI tools I use to boost my productivy and/or perform boring tasks. It also contains recurrent no-brainers. Below a summary of a selection of the available tools and how to use them (you can always explore them by yourself in `pyutils.cli`).
+`pyutils` contains small CLI tools I use to boost my productivity and/or perform boring tasks. It also contains recurrent no-brainers. Below a summary of a selection of the available tools and how to use them (you can always explore them by yourself in `pyutils.cli`).
 
 
 Note: this repo is unstable. If you start using any of these tools and after a while you find out they've changed, remember that it's possible to install a selected commit (you will, of course, lose future updates). If this happens in a way that interferes with your workflow, please let me know.
