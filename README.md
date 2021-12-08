@@ -103,7 +103,7 @@ Note: be careful with forcing checkout, as local changes are dismissed.
 
 **Includes**: `codecog-eq`
 
-**Extra requirements (see `setup.cfg`)**: `git`
+**Extra requirements (see `setup.cfg`)**: `codecogs`
 
 **Motivation**: add equations in `markdown`-based blog posts. Very powerful in combination with [mathpix](https://mathpix.com/).
 
