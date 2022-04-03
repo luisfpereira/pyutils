@@ -1,5 +1,6 @@
-import os
+
 from pathlib import Path
+import subprocess
 
 from pyutils.path import get_import_location
 from pyutils.path import find_repo_parent_path
@@ -16,7 +17,8 @@ def open_module(import_statement, path='.', installed=False,
     cmd = f'{subl_cmd} {parent_path / package / module_path}.py'
     if add:
         cmd += ' -a'
-    os.system(cmd)
+
+    _run_cmd(cmd)
 
 
 def open_package(package_name, path='.', installed=False,
@@ -30,16 +32,25 @@ def open_package(package_name, path='.', installed=False,
     cmd = f'{subl_cmd} {parent_path / package_name}'
     if add:
         cmd += ' -a'
-    os.system(cmd)
-    print(f'Added {package} to sublime.')
+
+    _run_cmd(cmd)
+
+    print(f'added {package} to sublime.')
 
 
 def open_repo(repo_name, path='.', subl_cmd='subl', add=True):
     parent_path = find_repo_parent_path(Path(path), repo_name)
 
     # open
-    cmd = f'{subl_cmd} {parent_path / repo_name}'
+    cmd = f' {subl_cmd} {parent_path / repo_name}'
     if add:
         cmd += ' -a'
-    os.system(cmd)
+
+    _run_cmd(cmd)
+
     print(f'Added {repo_name} to sublime.')
+
+
+def _run_cmd(cmd):
+    sp = subprocess.Popen(["/bin/bash", "-i", "-c", cmd])
+    sp.communicate()
