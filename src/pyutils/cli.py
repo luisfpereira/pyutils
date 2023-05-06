@@ -53,38 +53,6 @@ def make_callgraph(
 
 
 @click.command()
-@click.argument("import_statement", nargs=1, type=str)
-@click.option("--path", "-p", nargs=1, type=str, default=Path.home() / "Repos")
-@click.option("--installed", "-i", is_flag=True)
-@click.option("--new-window", "-n", is_flag=True)
-def open_module_subl(import_statement, path, installed, new_window):
-    from pyutils.subl import open_module
-
-    open_module(import_statement, path=path, installed=installed, add=not new_window)
-
-
-@click.command()
-@click.argument("package_name", nargs=1, type=str)
-@click.option("--path", "-p", nargs=1, type=str, default=Path.home() / "Repos")
-@click.option("--installed", "-i", is_flag=True)
-@click.option("--new-window", "-n", is_flag=True)
-def open_package_subl(package_name, path, installed, new_window):
-    from pyutils.subl import open_package
-
-    open_package(package_name, path=path, installed=installed, add=not new_window)
-
-
-@click.command()
-@click.argument("repo_name", nargs=1, type=str)
-@click.option("--path", "-p", nargs=1, type=str, default=Path.home() / "Repos")
-@click.option("--new-window", "-n", is_flag=True)
-def open_repo_subl(repo_name, path, new_window):
-    from pyutils.subl import open_repo
-
-    open_repo(repo_name, path=path, add=not new_window)
-
-
-@click.command()
 @click.argument("filename", nargs=1, type=str)
 @click.option("--full-name", "-f", is_flag=True)
 @click.option("--add-types", "-t", is_flag=True)
