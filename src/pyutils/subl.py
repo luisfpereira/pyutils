@@ -1,53 +1,101 @@
 from pathlib import Path
 import subprocess
 
-from pyutils.path import get_import_location
-from pyutils.path import find_repo_parent_path
+from pyutils.exceptions import (
+    NotFoundError,
+    MultipleFoundError,
+)
+from pyutils.path import (
+    find_repo_path,
+    ImportStatement,
+    get_site_packages_path,
+)
 
 
-def open_module(import_statement, path=".", installed=False, subl_cmd="subl", add=True):
+class SublimeConfig:
+    def __init__(
+        self,
+        subl_cmd: str = "subl",
+        add: bool = True,
+    ):
+        self.subl_cmd = subl_cmd
+        self.add = add
 
-    # get module and package
-    parent_path, package, module_path = get_import_location(
-        import_statement, path, installed, verbose=True
-    )
+    def run_add_path(self, path: Path):
+        cmd = f" {self.subl_cmd} {path}"
+        if self.add:
+            cmd += " -a"
 
-    # open
-    cmd = f"{subl_cmd} {parent_path / package / module_path}.py"
-    if add:
-        cmd += " -a"
-
-    _run_cmd(cmd)
-
-
-def open_package(package_name, path=".", installed=False, subl_cmd="subl", add=True):
-
-    # get package path
-    parent_path, package, _ = get_import_location(
-        package_name, path, installed, verbose=True
-    )
-
-    # open
-    cmd = f"{subl_cmd} {parent_path / package_name}"
-    if add:
-        cmd += " -a"
-
-    _run_cmd(cmd)
-
-    print(f"added {package} to sublime.")
+        _run_cmd(cmd)
 
 
-def open_repo(repo_name, path=".", subl_cmd="subl", add=True):
-    parent_path = find_repo_parent_path(Path(path), repo_name)
+def open_code(
+    import_: str,
+    search_path: Path = None,
+    installed: bool = None,
+    subl_config: SublimeConfig = None,
+):
+    import_statement = ImportStatement(import_, installed=installed)
 
-    # open
-    cmd = f" {subl_cmd} {parent_path / repo_name}"
-    if add:
-        cmd += " -a"
+    path = import_statement.find_package_path(search_path=search_path)
 
-    _run_cmd(cmd)
+    search_path_str = search_path or ""
+    if installed or installed is None:
+        if search_path_str:
+            search_path_str += "or "
+        search_path_str += str(get_site_packages_path())
 
-    print(f"Added {repo_name} to sublime.")
+    _check_none_or_multiple(path, import_, search_path_str)
+
+    import_statement.set_path(path)
+    if import_statement.is_module and not import_statement.full_path.exists():
+        _not_found_error(import_, search_path_str)
+
+    subl_config = subl_config or SublimeConfig()
+    subl_config.run_add_path(import_statement.full_path)
+
+    return import_statement
+
+
+def open_repo(
+    repo_name: str,
+    search_path: Path = Path("."),
+    subl_config: SublimeConfig = None,
+):
+    path = find_repo_path(search_path, repo_name)
+
+    _check_none_or_multiple(path, repo_name, str(search_path))
+
+    subl_config = subl_config or SublimeConfig()
+    subl_config.run_add_path(path)
+
+    return path
+
+
+def _check_none_or_multiple(path: Path, name: str, search_path_str: str):
+    if path is None:
+        _not_found_error(name, search_path_str)
+
+    if isinstance(path, list):
+        _found_multiple_error(path, name, search_path_str)
+
+
+def _not_found_error(name: str, search_path_str: str):
+    raise NotFoundError(f"Cannot find `{name}` in {search_path_str}.")
+
+
+def _found_multiple_error(
+    paths: list[Path],
+    name: str,
+    search_path_str: str,
+):
+    msg = f"More than one `{name}` found in `{search_path_str}`:\n"
+    spaces = 4 * " "
+    for path in paths:
+        msg += f"{spaces}-{str(path)}\n"
+    msg += "Be more specific."
+
+    raise MultipleFoundError(msg)
 
 
 def _run_cmd(cmd):

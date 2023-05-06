@@ -1,5 +1,6 @@
 from pathlib import Path
 import site
+import warnings
 
 
 def convert_dirname_to_path(dir_name):
@@ -7,6 +8,7 @@ def convert_dirname_to_path(dir_name):
     Notes:
         Handles definition of home with `~`.
     """
+    # TODO: check need
     dir_name_ls = dir_name.split("/")
     if dir_name_ls[0] == "~":
         path = Path.home() / "/".join(dir_name_ls[1:])
@@ -16,14 +18,23 @@ def convert_dirname_to_path(dir_name):
     return path
 
 
-def find_package_parent_path(path, package_name, exclude_patterns=("build/lib",)):
+def find_package_path(
+    search_path: Path,
+    package_name: str,
+    exclude_patterns: tuple[str] = ("build/lib",),
+):
 
     # get all packages and subpackages
     dir_paths = [
         path_.parent
-        for path_ in Path(path).glob("**/__init__.py")
+        for path_ in search_path.glob("**/__init__.py")
         if path_.parent.name == package_name
     ]
+
+    # remove subpackages
+    dir_paths = filter(
+        lambda path: (path.parent / "__init__.py").exists() == 0, dir_paths
+    )
 
     # exclude patterns
     dir_paths = [
@@ -32,20 +43,16 @@ def find_package_parent_path(path, package_name, exclude_patterns=("build/lib",)
         if not exclude_path_patterns(dir_path, exclude_patterns)
     ]
 
-    # only one possibility
     if len(dir_paths) == 1:
-        return dir_paths[0].parent
+        return dir_paths[0]
 
-    # in case a subpackage is found
-    for dir_path in dir_paths:
-
-        if len([path_ for path_ in dir_path.parent.glob("__init__.py")]) == 0:
-            return dir_path.parent
+    if len(dir_paths) > 1:
+        return dir_paths
 
     return None
 
 
-def exclude_path_patterns(path, exclude_patterns):
+def exclude_path_patterns(path: Path, exclude_patterns: tuple[str]):
     """
     Args:
         exclude_patterns (array-like): patterns to be ignored.
@@ -68,62 +75,92 @@ def get_site_packages_path():
     return Path(site.getsitepackages()[0])
 
 
-def get_package_name_from_import(import_str):
-    return import_str.split(".")[0]
+class ImportStatement:
+    """A nice way to find info related with an import statement.
+
+    Considers only package, subpackage, or module.
+    """
+
+    def __init__(
+        self,
+        import_: str,
+        installed: bool = None,
+    ):
+        self.import_ = import_
+        self.installed = installed
+
+        self.path = None
+
+    def set_path(self, path):
+        self.path = path
+        return self
+
+    @property
+    def package_name(self):
+        return self.import_.split(".")[0]
+
+    @property
+    def module_name(self):
+        if not self.is_module:
+            return self.package_name
+
+        return ".".join(self.import_.split(".")[1:])
+
+    def is_module(self):
+        return "." not in self.import_
+
+    @property
+    def full_path(self):
+        if not self.is_module:
+            return self.path
+
+        import_ls = self.import_.split(".")[1:]
+        import_ls[-1] = import_ls[-1] + ".py"
+        return self.path / Path(*import_ls)
+
+    def find_package_path(self, search_path: Path = None):
+        package_name = self.package_name
+        if self.installed is None:
+            parent_path = find_package_path(search_path, package_name)
+            if parent_path is None:
+                parent_path = find_package_path(
+                    get_site_packages_path(),
+                    self.package_path,
+                )
+
+        else:
+            if self.installed:
+                if search_path is not None:
+                    warnings.warn("`search_path` ignored.")
+                search_path = get_site_packages_path()
+
+            parent_path = find_package_path(search_path, self.package_name)
+
+        return parent_path
 
 
-def get_module_name_from_import(import_str):
-    return ".".join(import_str.split(".")[1:])
-
-
-def get_valid_path_from_import(import_str):
-    return Path(*import_str.split("."))
-
-
-def get_import_location(import_statement, path=".", installed=False, verbose=False):
-
-    package = get_package_name_from_import(import_statement)
-    module = get_module_name_from_import(import_statement)
-
-    # get module and package paths
-    if installed:
-        parent_path = get_site_packages_path()
-    else:
-        parent_path = find_package_parent_path(path, package)
-
-    if parent_path is None:
-        raise Exception(f"{package} was not found.")
-    elif verbose:
-        print(f"Found {package} in {parent_path}.")
-
-    module_path = get_valid_path_from_import(module)
-
-    return parent_path, package, module_path
-
-
-def find_repo_parent_path(path, repo_name):
-
-    # get all packages and subpackages
+def find_repo_path(
+    search_path: Path,
+    repo_name: str,
+):
+    """Recursively searchs for repo path."""
     filenames = [
-        path_.parent for path_ in path.glob("**/.git") if path_.parent.name == repo_name
+        path_.parent
+        for path_ in search_path.glob("**/.git")
+        if path_.parent.name == repo_name
     ]
 
-    # only one possibility
     if len(filenames) == 1:
-        return filenames[0].parent
-    elif len(filenames) > 1:
-        raise Exception("More than one repo with the given name.")
-    else:
-        raise Exception("Repo was not found.")
+        return filenames[0]
+
+    if len(filenames) > 1:
+        return filenames
 
     return None
 
 
-def find_repo_path(path, repo_name):
-    return find_repo_parent_path(path, repo_name) / repo_name
-
-
 def find_all_repos_paths(path, sort=True):
+    # TODO: rename
     paths = [path.parent for path in path.glob("**/.git")]
     if sort:
         paths = sorted(paths, key=lambda x: x.name.lower())
