@@ -8,6 +8,9 @@ from codemetrics.vega import vis_ages
 from codemetrics.vega import vis_hot_spots
 
 
+# TODO: verify duplication in codemetrics report
+
+
 IGNORE_PATHS = ('.', 'docs', 'doc', 'tests', 'test', 'notebooks')
 IGNORE_LANGS = ('reStructuredText', 'Markdown', 'make')
 IGNORE_EXTS = ('geo', 'xmf', 'xdmf', 'h5', 'hdf5', 'xml', 'json',

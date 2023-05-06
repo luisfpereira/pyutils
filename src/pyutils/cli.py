@@ -112,7 +112,7 @@ def codecog_eq():
 @click.command()
 @click.argument('filename', nargs=1, type=str)
 @click.option('--fmt', '-f', nargs=1, type=str, default='svg')
-@click.option('--outputs-dir', '-o', nargs=1, type=str, default='outputs')
+@click.option('--outputs-dir', '-o', nargs=1, type=str, default='_outputs')
 def my_dot(filename, fmt, outputs_dir):
     from pyutils.graphviz import export_graph
     export_graph(filename, fmt=fmt, outputs_dir=outputs_dir)
@@ -121,13 +121,14 @@ def my_dot(filename, fmt, outputs_dir):
 @click.command()
 @click.option('--inputs-dir', '-i', type=str, default='.')
 @click.option('--fmt', '-f', nargs=1, type=str, default='svg')
-@click.option('--outputs-dir', '-o', nargs=1, type=str, default='outputs')
+@click.option('--outputs-dir', '-o', nargs=1, type=str, default='_outputs')
 def my_dot_all(inputs_dir, fmt, outputs_dir):
     import glob
     from pyutils.graphviz import export_graph
 
-    for filename in glob.glob(f'{inputs_dir}/*.gv'):
-        export_graph(filename, fmt=fmt, outputs_dir=outputs_dir)
+    for ext in ['dot', 'gv']:
+        for filename in glob.glob(f'{inputs_dir}/*.{ext}'):
+            export_graph(filename, fmt=fmt, outputs_dir=outputs_dir)
 
 
 @click.command()
@@ -235,6 +236,7 @@ def pull_repo(repo_name, search_dirname):
 @click.option('--dirname', '-d', type=str, default=None)
 def pull_repos(search_dirname, dirname):
     from pyutils.git import pull
+    # TODO: add progress bar
 
     repos_dict = _get_git_repos(search_dirname, dirname)
 
