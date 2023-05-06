@@ -1,6 +1,4 @@
-
-
-def transform_into_dict(items, id_key='id', remove_id=True):
+def transform_into_dict(items, id_key="id", remove_id=True):
     """Transforms list into dictionary based on 'id' field.
 
     Args:

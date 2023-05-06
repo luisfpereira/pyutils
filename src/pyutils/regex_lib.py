@@ -14,7 +14,7 @@ verb.
 
 
 def url():
-    return r'http(?:s)?:\/\/.(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_\+.~#?&/=]*)'
+    return r"http(?:s)?:\/\/.(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_\+.~#?&/=]*)"
 
 
 def python_import():
@@ -22,43 +22,40 @@ def python_import():
     `from <g1> import <g2> as <g3>`
     """
     # TODO: deal with multiple imports from the same place
-    return r'(?:from[ ]+)*(\S{1,})*[ ]*import[ ]+(\S{1,})(?:[ ]+as[ ]+)*(\S{1,})*'
+    return r"(?:from[ ]+)*(\S{1,})*[ ]*import[ ]+(\S{1,})(?:[ ]+as[ ]+)*(\S{1,})*"
 
 
-def punctuation(chars=r',.\"!@#\$%\^&*(){}\[\]?/;\'`~:<>+=-'):
+def punctuation(chars=r",.\"!@#\$%\^&*(){}\[\]?/;\'`~:<>+=-"):
     """Finds characters in text. Useful to preprocess text. Do not forget
     to escape special characters.
     """
-    return rf'[{chars}]'
+    return rf"[{chars}]"
 
 
 def extra_whitespaces():
     """Specially useful to remove extra whitespaces from text. Just replace
     by an empty str.
     """
-    return r'(?<=[ ]{1})[ ]{1,}'
+    return r"(?<=[ ]{1})[ ]{1,}"
 
 
 def markdown_headers_symbol():
-    """Get markdown headers symbol (to get or change level).
-    """
-    return r'^[#]{1,}|(?<=\n)[#]{1,}'
+    """Get markdown headers symbol (to get or change level)."""
+    return r"^[#]{1,}|(?<=\n)[#]{1,}"
 
 
 def markdown_header(level=None):
-    """Get markdown headers (without symbol).
-    """
+    """Get markdown headers (without symbol)."""
     if level is None:
-        return r'(?:^[#]+ |\n[#]+ )([^\t\n]+)'
+        return r"(?:^[#]+ |\n[#]+ )([^\t\n]+)"
     else:
-        return rf'(?:^[#]{{{level}}} |\n[#]{{{level}}} )([^\t\n]+)'
+        return rf"(?:^[#]{{{level}}} |\n[#]{{{level}}} )([^\t\n]+)"
 
 
 def inline_eq():
-    """Finds inline equations.
-    """
-    return r'\$[^\$]+\$'
+    """Finds inline equations."""
+    return r"\$[^\$]+\$"
 
 
 def inline_code():
-    return r'`[^`]+`'
+    return r"`[^`]+`"

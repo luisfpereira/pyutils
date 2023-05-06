@@ -10,8 +10,7 @@ from h5py import Dataset
 
 from pyutils.viz_tree import get_tree
 
-MAP_TYPE_STR = {Group: 'group',
-                Dataset: 'dataset'}
+MAP_TYPE_STR = {Group: "group", Dataset: "dataset"}
 
 
 def rename_hdf(filename, new_basename):
@@ -20,30 +19,31 @@ def rename_hdf(filename, new_basename):
     Notes:
         `xdfm` and `h5` files assumed to be in the same folder.
     """
-    ext = filename.split('.')[-1]  # xmf or xdmf
+    ext = filename.split(".")[-1]  # xmf or xdmf
     dirname = os.path.dirname(filename)
-    if ext not in ['xmf', 'xdmf']:
-        raise Exception('Unexpected extension type')
+    if ext not in ["xmf", "xdmf"]:
+        raise Exception("Unexpected extension type")
 
-    basename = os.path.basename(filename).split('.')[0]
+    basename = os.path.basename(filename).split(".")[0]
 
     # replace in xdmf
-    with open(filename, 'r') as file:
+    with open(filename, "r") as file:
         data = file.read()
-    h5_ext = re.search(fr'{basename}.(\w+):', data).group(1)
+    h5_ext = re.search(rf"{basename}.(\w+):", data).group(1)
 
     new_data = re.sub(basename, new_basename, data)
-    with open(filename, 'w') as file:
+    with open(filename, "w") as file:
         file.write(new_data)
 
     # rename files
-    shutil.move(filename, os.path.join(dirname, f'{new_basename}.{ext}'))
-    shutil.move(os.path.join(dirname, f'{basename}.{h5_ext}'),
-                os.path.join(dirname, f'{new_basename}.{h5_ext}'))
+    shutil.move(filename, os.path.join(dirname, f"{new_basename}.{ext}"))
+    shutil.move(
+        os.path.join(dirname, f"{basename}.{h5_ext}"),
+        os.path.join(dirname, f"{new_basename}.{h5_ext}"),
+    )
 
 
 class HdfNode(AnytreeNode):
-
     def __init__(self, name, parent=None, children=None):
         super().__init__(name, parent, children)
         self.full_name = name
@@ -56,7 +56,7 @@ class HdfNode(AnytreeNode):
 
     def get_dtype(self, file):
         obj = self._get_hdf_obj(file)
-        if hasattr(obj, 'dtype'):
+        if hasattr(obj, "dtype"):
             return obj.dtype
 
     def is_dataset(self, file):
@@ -66,16 +66,17 @@ class HdfNode(AnytreeNode):
         return type(self._get_hdf_obj(file)) is Group
 
 
-def get_hdf_tree(file, root_name='.', simplify_names=True, append_type=False):
+def get_hdf_tree(file, root_name=".", simplify_names=True, append_type=False):
 
     # get items
     items_ls = []
     file.visit(items_ls.append)
 
     # create items dict
-    items = [{'id': id_, 'name': name, 'parent_id': ''}
-             for id_, name in enumerate(items_ls)]
-    _assign_parent(items[1:], 0, items[0], level=0, level_last={0: ''})
+    items = [
+        {"id": id_, "name": name, "parent_id": ""} for id_, name in enumerate(items_ls)
+    ]
+    _assign_parent(items[1:], 0, items[0], level=0, level_last={0: ""})
 
     root = get_tree(items, Node=HdfNode)
 
@@ -90,16 +91,16 @@ def get_hdf_tree(file, root_name='.', simplify_names=True, append_type=False):
 
 def _assign_parent(items, i, parent, level, level_last):
     item = items[i]
-    child_level = len(item['name'].split('/')) - 1
+    child_level = len(item["name"].split("/")) - 1
 
     if child_level > level:  # break cause
-        parent_id = parent['id']
+        parent_id = parent["id"]
     elif child_level == level:
-        parent_id = parent['parent_id']
+        parent_id = parent["parent_id"]
     else:
         parent_id = level_last[child_level]
 
-    item['parent_id'] = parent_id
+    item["parent_id"] = parent_id
     level_last[child_level] = parent_id
 
     try:
@@ -110,10 +111,10 @@ def _assign_parent(items, i, parent, level, level_last):
 
 def _simplify_names(root):
     for node in PreOrderIter(root):
-        node.name = node.name.split('/')[-1]
+        node.name = node.name.split("/")[-1]
 
 
 def _append_type(root, file):
     for node in PreOrderIter(root):
         if node.is_dataset(file):
-            node.name = f'{node.name}: {node.get_dtype(file)}'
+            node.name = f"{node.name}: {node.get_dtype(file)}"

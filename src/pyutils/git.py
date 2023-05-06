@@ -7,7 +7,7 @@ from pyutils.path import find_repo_path
 from pyutils.path import find_all_repos_paths
 
 
-def get_repo(repo_name, path=Path.home() / 'Repos'):
+def get_repo(repo_name, path=Path.home() / "Repos"):
     repo_path = find_repo_path(path, repo_name)
     return get_repo_from_path(repo_path)
 
@@ -33,7 +33,7 @@ def get_repos_from_paths(repos_paths):
 
 
 def get_repo_name(repo):
-    return repo.git_dir.split('/')[-2]
+    return repo.git_dir.split("/")[-2]
 
 
 def get_repo_branch_names(repo, include_origin=False, active_first=True):
@@ -117,8 +117,8 @@ def pull(repo):
         msg_local_conflict = "stderr: 'error: Your local changes to the following files would be overwritten by merge:'"
 
         stderr = e.stderr
-        if stderr == '':
-            repo.git.execute(['git', 'merge', '--abort'])
+        if stderr == "":
+            repo.git.execute(["git", "merge", "--abort"])
             return 3
         elif stderr.strip() == msg_local_conflict:
             return 4
@@ -150,6 +150,5 @@ def is_up_to_date(repo):
 
 
 def has_upstream(repo):
-    """Checks if activate branch has upstream.
-    """
+    """Checks if activate branch has upstream."""
     return repo.active_branch.tracking_branch() is not None

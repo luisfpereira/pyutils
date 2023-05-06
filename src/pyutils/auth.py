@@ -8,7 +8,7 @@ def get_auth_filepath(filename):
 
 def get_secrets(filename):
     filepath = get_auth_filepath(filename)
-    with open(filepath, 'r') as file:
+    with open(filepath, "r") as file:
         data = json.load(file)
 
     return data

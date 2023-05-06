@@ -6,7 +6,7 @@ from pyutils.auth import get_secrets
 
 # TODO: very similar to joplin. make abstract?
 def create_signed_session():
-    secrets = get_secrets('binance_secrets.json')
+    secrets = get_secrets("binance_secrets.json")
     return SignedBinanceSession(**secrets)
 
 
@@ -16,9 +16,9 @@ def get_account_balance_details(session):
     data = req.json()
 
     # get most recent snapshot
-    snapshot = data['snapshotVos'][-1]
+    snapshot = data["snapshotVos"][-1]
 
-    return {asset['asset']: asset['free'] for asset in snapshot['data']['balances']}
+    return {asset["asset"]: asset["free"] for asset in snapshot["data"]["balances"]}
 
 
 # TODO: get average price of buying

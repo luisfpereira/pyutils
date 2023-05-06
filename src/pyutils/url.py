@@ -6,9 +6,7 @@ import tldextract
 from pyutils import regex_lib
 
 
-DOMAIN_CORRECTIONS = {
-    'youtu': 'youtube'
-}
+DOMAIN_CORRECTIONS = {"youtu": "youtube"}
 
 
 def get_urls(text, pp_fnc=lambda x: x):
@@ -24,9 +22,9 @@ def get_urls(text, pp_fnc=lambda x: x):
 def get_domain(url):
     extract_result = tldextract.extract(url)
 
-    domain = ''
-    if extract_result.subdomain not in ['', 'www']:
-        domain += f'{extract_result.subdomain}.'
+    domain = ""
+    if extract_result.subdomain not in ["", "www"]:
+        domain += f"{extract_result.subdomain}."
 
     domain += extract_result.domain
 
@@ -43,8 +41,7 @@ def get_links_from_domains(domains, urls):
 
 
 def split_url(url):
-    """Splits an url in endpoint and query parameters.
-    """
+    """Splits an url in endpoint and query parameters."""
     parsed_url = urlparse.urlparse(url)
 
     endpoint = parsed_url.netloc + parsed_url.path
@@ -54,13 +51,11 @@ def split_url(url):
 
 
 def clean_url(url):
-    """Removes query part (returns netloc + path).
-    """
+    """Removes query part (returns netloc + path)."""
     parsed_url = urlparse.urlparse(url)
     return parsed_url.netloc + parsed_url.path
 
 
 def get_urls_nested(items, pp_fnc=None, access_fnc=lambda x: x):
-    """Gets urls from nested object.
-    """
+    """Gets urls from nested object."""
     return [get_urls(access_fnc(item), pp_fnc=pp_fnc) for item in items]

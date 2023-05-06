@@ -1,6 +1,6 @@
 import urllib
 
-BASE_URL = 'https://latex.codecogs.com/svg.image'
+BASE_URL = "https://latex.codecogs.com/svg.image"
 
 
 def get_image_url(equation):
@@ -8,4 +8,4 @@ def get_image_url(equation):
 
 
 def encode_equation(equation):
-    return urllib.parse.quote(rf'{equation}')
+    return urllib.parse.quote(rf"{equation}")

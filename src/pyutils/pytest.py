@@ -24,12 +24,12 @@ def have_tests_failed(dir_name):
         return 2
 
     # py cache exists, but tests were not run
-    run_info = _read_info_from_json(list(pycache_path.glob('**/nodeids'))[0])
+    run_info = _read_info_from_json(list(pycache_path.glob("**/nodeids"))[0])
     if len(run_info) == 0:
         return 2
 
     # lastfailed file does not exist
-    lastfailed_paths = list(pycache_path.glob('**/lastfailed'))
+    lastfailed_paths = list(pycache_path.glob("**/lastfailed"))
     if len(lastfailed_paths) == 0:
         return 0
 
@@ -57,14 +57,14 @@ def run_tests(dir_name, rm_cache=True):
 
 
 def _read_info_from_json(filename):
-    with open(filename, 'r') as file:
+    with open(filename, "r") as file:
         info = json.load(file)
 
     return info
 
 
 def _get_pycache_path(dir_name):
-    pycache_paths = list(Path(dir_name).glob('**/.pytest_cache'))
+    pycache_paths = list(Path(dir_name).glob("**/.pytest_cache"))
     if len(pycache_paths) == 0:
         return None
     else:
@@ -78,20 +78,21 @@ def _rm_pycache(dir_name):
 
 
 def _make_test(dir_name):
-    return _run_cmd(['make', 'test'], dir_name) != ''
+    return _run_cmd(["make", "test"], dir_name) != ""
 
 
 def _run_pytest(dir_name):
     # TODO: make more robust with pytest not found?
-    stdout = _run_cmd(['pytest'], dir_name)
-    return 'no tests ran' not in stdout
+    stdout = _run_cmd(["pytest"], dir_name)
+    return "no tests ran" not in stdout
 
 
 def _run_cmd(cmd_ls, dir_name, verbose=True):
     # TODO: adapt verbose levels
 
-    result = subprocess.run(cmd_ls, stdout=subprocess.PIPE,
-                            universal_newlines=True, cwd=dir_name)
+    result = subprocess.run(
+        cmd_ls, stdout=subprocess.PIPE, universal_newlines=True, cwd=dir_name
+    )
 
     if verbose:
         print(result.stdout)

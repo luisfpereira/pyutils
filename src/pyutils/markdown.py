@@ -6,7 +6,7 @@ from pyutils import regex_lib
 def increase_header(text):
     regex = re.compile(regex_lib.markdown_headers_symbol())
 
-    return regex.sub(lambda m: m.group() + '#', text)
+    return regex.sub(lambda m: m.group() + "#", text)
 
 
 def decrease_header(text):
